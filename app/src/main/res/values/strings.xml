@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">FullMoonMoney</string>
+    <string name="item">項目</string>
+    <string name="add_item">新增項目</string>
+    <string name="amount">金額</string>
+    <string name="monthly_accounting">月記帳</string>
+    <string name="general_accounting">一般記帳</string>
+    <string name="ok">確定</string>
 </resources>
