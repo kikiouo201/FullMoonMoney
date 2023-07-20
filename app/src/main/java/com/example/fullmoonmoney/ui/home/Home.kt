@@ -1,7 +1,9 @@
 package com.example.fullmoonmoney.ui.home
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -35,48 +37,74 @@ fun Home(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(20.dp),
-                text = "6月",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .height(80.dp)
-                    .wrapContentHeight(align = Alignment.CenterVertically),
-                text = "圖表",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            TabRow(
-                selectedTabIndex = state,
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Tab(
-                    text = { Text(stringResource(R.string.monthly_accounting)) },
-                    selected = state == 0,
-                    onClick = { state = 0 }
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(20.dp),
+                    text = "6月",
+                    style = MaterialTheme.typography.bodyLarge
                 )
-                Tab(
-                    text = { Text(stringResource(R.string.general_accounting)) },
-                    selected = state == 1,
-                    onClick = { state = 1 }
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .height(80.dp)
+                        .wrapContentHeight(align = Alignment.CenterVertically),
+                    text = "圖表",
+                    style = MaterialTheme.typography.bodyLarge
                 )
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = "選擇 tab ${state + 1}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                when (homeViewModel.homeCategories[state]) {
+                    HomeCategory.Monthly -> MonthlyAccounting()
+                    HomeCategory.General -> GeneralAccounting(
+                        text = stringResource(R.string.general_accounting),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+
+                    HomeCategory.Assets -> Text(
+                        text = stringResource(R.string.assets),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    HomeCategory.Project -> Text(
+                        text = stringResource(R.string.project),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = "選擇 tab ${state + 1}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            if (state == 0) {
-                MonthlyAccounting()
-            } else {
-                GeneralAccounting(
-                    text = stringResource(R.string.general_accounting),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+            TabRow(
+                selectedTabIndex = state
+            ) {
+                homeViewModel.homeCategories.forEachIndexed { index, category ->
+                    Tab(
+                        text = {
+                            Text(
+                                stringResource(
+                                    when (category) {
+                                        HomeCategory.General -> R.string.general_accounting
+                                        HomeCategory.Monthly -> R.string.monthly_accounting
+                                        HomeCategory.Assets -> R.string.assets
+                                        HomeCategory.Project -> R.string.project
+                                    }
+                                )
+                            )
+                        },
+                        selected = state == index,
+                        onClick = { state = index }
+                    )
+                }
             }
         }
     }

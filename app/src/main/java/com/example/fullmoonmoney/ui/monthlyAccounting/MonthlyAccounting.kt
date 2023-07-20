@@ -41,9 +41,7 @@ fun MonthlyAccounting(
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        Modifier.padding(15.dp)
     ) {
         var titleData = listOf(R.string.amount, R.string.item)
         item {

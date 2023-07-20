@@ -28,12 +28,14 @@ fun TableHeaderCell(
     color: Color,
     weight: Float = 1f
 ) {
-    Row(Modifier.background(color)) {
+    Row {
         textList.forEach {
             Text(
                 text = stringResource(it),
                 modifier = Modifier
+                    .padding(5.dp)
                     .border(1.dp, Color.Black)
+                    .background(color)
                     .weight(weight)
                     .padding(10.dp)
             )

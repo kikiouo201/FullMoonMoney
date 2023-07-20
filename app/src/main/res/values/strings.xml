@@ -5,5 +5,7 @@
     <string name="amount">金額</string>
     <string name="monthly_accounting">月記帳</string>
     <string name="general_accounting">一般記帳</string>
+    <string name="assets">資產</string>
+    <string name="project">專案</string>
     <string name="ok">確定</string>
 </resources>
