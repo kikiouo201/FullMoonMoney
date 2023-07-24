@@ -1,16 +1,15 @@
 package com.example.fullmoonmoney.ui.monthlyAccounting
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,15 +21,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
+import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 // 月記帳
 @Composable
@@ -40,47 +40,50 @@ fun MonthlyAccounting(
     var tableData by remember { viewModel.tableData }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
-    LazyColumn(
-        Modifier.padding(15.dp)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(15.dp)
     ) {
         var titleData = listOf(R.string.amount, R.string.item)
-        item {
-            TableHeaderCell(
-                textList = titleData,
-                color = Color(android.graphics.Color.parseColor("#CCCCFF"))
-            )
-        }
-        items(tableData) {
-            val (title, text) = it
+        TableHeaderCell(
+            textList = titleData,
+            color = MaterialTheme.colorScheme.primaryContainer
+        )
+        tableData.forEachIndexed { index, data ->
+            var (title, text) = data
             Row(Modifier.fillMaxWidth()) {
-                TableContentCell(text = title, textFieldText = text.toString())
-            }
-        }
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(onClick = {
-                    isAddItemDialog = true
-                }) {
-                    Text(text = "+")
-                }
-            }
-        }
-        item {
-            if (isAddItemDialog) {
-                AddItemDialog { str ->
-                    mutableListOf<Pair<String, Int>>().let {
+                TableContentCell(text = title, textFieldText = text) { str ->
+                    text = str
+                    mutableListOf<Pair<String, String>>().let {
                         it.addAll(tableData)
-                        it.add(Pair(str, 0))
+                        it[index] = Pair(tableData[index].first, str)
                         viewModel.tableData.value = it
                     }
-                    isAddItemDialog = false
                 }
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(onClick = {
+                isAddItemDialog = true
+            }) {
+                Text(text = "+")
+            }
+        }
+        if (isAddItemDialog) {
+            AddItemDialog { text ->
+                mutableListOf<Pair<String, String>>().let {
+                    it.addAll(tableData)
+                    it.add(Pair(text, ""))
+                    viewModel.tableData.value = it
+                }
+                isAddItemDialog = false
             }
         }
     }
@@ -115,4 +118,12 @@ fun AddItemDialog(onAdd: (String) -> Unit) {
             }
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    FullMoonMoneyTheme {
+        MonthlyAccounting()
+    }
 }

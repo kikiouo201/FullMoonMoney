@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 
 // 標題
@@ -49,7 +51,8 @@ fun TableHeaderCell(
 fun TableContentCell(
     text: String,
     textFieldText: String,
-    weight: Float = 1f
+    weight: Float = 1f,
+    onChangeText: (String) -> Unit
 ) {
     var value by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(textFieldText, TextRange(0, 7)))
@@ -66,10 +69,14 @@ fun TableContentCell(
         )
         OutlinedTextField(
             value = value,
-            onValueChange = { value = it },
+            onValueChange = {
+                value = it
+                onChangeText(it.text)
+            },
             modifier = Modifier
                 .weight(weight)
-                .padding(5.dp)
+                .padding(5.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
     }
 }
