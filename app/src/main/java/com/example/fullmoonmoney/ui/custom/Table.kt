@@ -10,18 +10,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 
 // 標題
 @Composable
@@ -54,9 +48,6 @@ fun TableContentCell(
     weight: Float = 1f,
     onChangeText: (String) -> Unit
 ) {
-    var value by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(textFieldText, TextRange(0, 7)))
-    }
     Row(
         modifier = Modifier.padding(5.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -68,10 +59,9 @@ fun TableContentCell(
                 .padding(10.dp)
         )
         OutlinedTextField(
-            value = value,
+            value = textFieldText,
             onValueChange = {
-                value = it
-                onChangeText(it.text)
+                onChangeText(it)
             },
             modifier = Modifier
                 .weight(weight)
@@ -80,4 +70,3 @@ fun TableContentCell(
         )
     }
 }
-

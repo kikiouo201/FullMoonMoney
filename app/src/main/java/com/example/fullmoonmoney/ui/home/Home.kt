@@ -119,7 +119,7 @@ fun Home(
                 style = MaterialTheme.typography.bodyLarge
             )
             when (homeViewModel.homeCategories[state]) {
-                HomeCategory.Monthly -> MonthlyAccounting()
+                HomeCategory.Monthly -> MonthlyAccounting(selectedMonth)
                 HomeCategory.General -> GeneralAccounting(
                     text = stringResource(R.string.general_accounting),
                     modifier = Modifier.align(Alignment.CenterHorizontally)

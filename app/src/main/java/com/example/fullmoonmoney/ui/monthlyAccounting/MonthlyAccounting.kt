@@ -35,9 +35,11 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 // 月記帳
 @Composable
 fun MonthlyAccounting(
+    monthIndex: Int = 0,
     viewModel: MonthlyAccountingViewModel = viewModel()
 ) {
-    var tableData by remember { viewModel.tableData }
+    var monthlyData by remember { viewModel.monthlyData }
+    var tableData by remember { viewModel.currentTableData }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -46,19 +48,30 @@ fun MonthlyAccounting(
             .padding(15.dp)
     ) {
         var titleData = listOf(R.string.amount, R.string.item)
+        if (!monthlyData.containsKey(monthIndex)) {
+            viewModel.addMonthlyData(monthIndex)
+        }
+        monthlyData[monthIndex]?.let {
+            tableData = it.data
+        }
+
         TableHeaderCell(
             textList = titleData,
             color = MaterialTheme.colorScheme.primaryContainer
         )
         tableData.forEachIndexed { index, data ->
-            var (title, text) = data
+            var mData = remember { mutableStateOf(data) }
+            mData.value = data
             Row(Modifier.fillMaxWidth()) {
-                TableContentCell(text = title, textFieldText = text) { str ->
-                    text = str
+                TableContentCell(
+                    text = mData.value.first,
+                    textFieldText = mData.value.second
+                ) { str ->
+                    mData.value = Pair(mData.value.first, str)
                     mutableListOf<Pair<String, String>>().let {
                         it.addAll(tableData)
                         it[index] = Pair(tableData[index].first, str)
-                        viewModel.tableData.value = it
+                        viewModel.setCurrentTableData(monthIndex, it)
                     }
                 }
             }
@@ -81,7 +94,7 @@ fun MonthlyAccounting(
                 mutableListOf<Pair<String, String>>().let {
                     it.addAll(tableData)
                     it.add(Pair(text, ""))
-                    viewModel.tableData.value = it
+                    viewModel.monthlyData.value[monthIndex]?.data = it
                 }
                 isAddItemDialog = false
             }
