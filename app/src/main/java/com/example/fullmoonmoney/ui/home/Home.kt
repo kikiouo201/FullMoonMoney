@@ -42,7 +42,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyAccounting
 import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyAccountingViewModel
-import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyCategory
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 // 首頁
@@ -52,10 +51,8 @@ fun Home(
     homeViewModel: HomeViewModel = viewModel()
 ) {
     var state by remember { homeViewModel.state }
-    var netWorth by remember { homeViewModel.netWorth }
     var monthlyCategory by remember { homeViewModel.monthlyCategory }
     var selectedMonth by remember { mutableStateOf(1) }
-    var expanded by remember { mutableStateOf(false) }
     val monthlyAccountingViewModel = MonthlyAccountingViewModel()
 
     Scaffold(topBar = {
@@ -82,72 +79,35 @@ fun Home(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Row {
-                    Text(text = "淨值 : ")
-                    Text(text = netWorth)
-                }
-                Box {
-                    IconButton(modifier = Modifier.width(70.dp),
-                        onClick = { expanded = true }) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "$selectedMonth 月")
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                modifier = Modifier.fillMaxHeight(),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        repeat(12) {
-                            DropdownMenuItem(text = {
-                                Text(
-                                    textAlign = TextAlign.Center,
-                                    text = "${it + 1} 月",
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }, onClick = {
-                                selectedMonth = it + 1
-                                expanded = false
-                            })
-                        }
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround,
-            ) {
-                Button(onClick = { monthlyCategory = MonthlyCategory.Income }) {
-                    Text(text = stringResource(id = R.string.income))
-                }
-                Button(onClick = { monthlyCategory = MonthlyCategory.Invest }) {
-                    Text(text = stringResource(id = R.string.invest))
-                }
-                Button(onClick = { monthlyCategory = MonthlyCategory.Expenditure }) {
-                    Text(text = stringResource(id = R.string.expenditure))
-                }
-                Button(onClick = { monthlyCategory = MonthlyCategory.Debt }) {
-                    Text(text = stringResource(id = R.string.debt))
-                }
-
-            }
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .height(80.dp)
-                    .wrapContentHeight(align = Alignment.CenterVertically),
-                text = "圖表",
-                style = MaterialTheme.typography.bodyLarge
-            )
             when (homeViewModel.homeCategories[state]) {
                 HomeCategory.Monthly -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(text = "淨值 : ${monthlyAccountingViewModel.netWorth.value}")
+                        MonthDropdownMenu(selectedMonth) { selectedMonth = it }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround,
+                    ) {
+                        monthlyAccountingViewModel.monthlyCategories.forEach {
+                            Button(onClick = { monthlyCategory = it }) {
+                                Text(text = stringResource(id = it.categoryName))
+                            }
+                        }
+                    }
+                    Text(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .height(80.dp)
+                            .wrapContentHeight(align = Alignment.CenterVertically),
+                        text = "圖表",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     monthlyAccountingViewModel.setCurrentStatus(monthlyCategory, selectedMonth)
                     MonthlyAccounting(monthlyAccountingViewModel)
                 }
@@ -179,6 +139,40 @@ fun GeneralAccounting(text: String, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier, text = text, style = MaterialTheme.typography.bodyLarge
     )
+}
+
+@Composable
+fun MonthDropdownMenu(selectedMonth: Int, onSelected: (Int) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(modifier = Modifier.width(70.dp),
+            onClick = { expanded = true }) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "$selectedMonth 月")
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    modifier = Modifier.fillMaxHeight(),
+                    contentDescription = ""
+                )
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }) {
+            repeat(12) {
+                DropdownMenuItem(text = {
+                    Text(
+                        textAlign = TextAlign.Center,
+                        text = "${it + 1} 月",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }, onClick = {
+                    onSelected(it + 1)
+                    expanded = false
+                })
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)

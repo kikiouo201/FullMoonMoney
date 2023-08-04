@@ -8,9 +8,16 @@ import com.example.fullmoonmoney.R
 
 class MonthlyAccountingViewModel : ViewModel() {
 
+    var netWorth = mutableStateOf(0)
     private var monthlyData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
     private var monthIndex = mutableStateOf(1)
     private var currentMonthlyCategory = mutableStateOf(MonthlyCategory.Income)
+    val monthlyCategories: List<MonthlyCategory> = listOf(
+        MonthlyCategory.Income,
+        MonthlyCategory.Invest,
+        MonthlyCategory.Expenditure,
+        MonthlyCategory.Debt
+    )
 
     init {
         // 測試資料

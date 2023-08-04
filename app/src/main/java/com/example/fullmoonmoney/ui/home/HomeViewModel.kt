@@ -13,7 +13,6 @@ import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyCategory
 
 class HomeViewModel : ViewModel() {
     var state = mutableStateOf(0)
-    var netWorth = mutableStateOf("12,322")
     var monthlyCategory = mutableStateOf(MonthlyCategory.Income)
     val homeCategories: List<HomeCategory> = listOf(
         HomeCategory.Monthly,
