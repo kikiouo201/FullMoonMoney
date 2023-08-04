@@ -10,12 +10,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 
 // 標題
 @Composable
@@ -45,7 +45,6 @@ fun TableHeaderCell(
 fun TableContentCell(
     text: String,
     textFieldText: String,
-    weight: Float = 1f,
     onChangeText: (String) -> Unit
 ) {
     Row(
@@ -55,7 +54,7 @@ fun TableContentCell(
         Text(
             text = "$text :",
             Modifier
-                .weight(weight)
+                .weight(1f)
                 .padding(10.dp)
         )
         OutlinedTextField(
@@ -64,7 +63,7 @@ fun TableContentCell(
                 onChangeText(it)
             },
             modifier = Modifier
-                .weight(weight)
+                .weight(1f)
                 .padding(5.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )

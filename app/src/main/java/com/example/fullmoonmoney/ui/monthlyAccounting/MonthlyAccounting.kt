@@ -1,6 +1,5 @@
 package com.example.fullmoonmoney.ui.monthlyAccounting
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
@@ -34,13 +32,9 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 // 月記帳
 @Composable
-fun MonthlyAccounting(
-    monthIndex: Int = 0,
-    viewModel: MonthlyAccountingViewModel = viewModel()
-) {
-    var monthlyData by remember { viewModel.monthlyData }
-    var tableData by remember { viewModel.currentTableData }
+fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel) {
     var isAddItemDialog by remember { mutableStateOf(false) }
+    val tableData = viewModel.getMonthlyData()
 
     Column(
         Modifier
@@ -48,12 +42,6 @@ fun MonthlyAccounting(
             .padding(15.dp)
     ) {
         var titleData = listOf(R.string.amount, R.string.item)
-        if (!monthlyData.containsKey(monthIndex)) {
-            viewModel.addMonthlyData(monthIndex)
-        }
-        monthlyData[monthIndex]?.let {
-            tableData = it.data
-        }
 
         TableHeaderCell(
             textList = titleData,
@@ -71,33 +59,32 @@ fun MonthlyAccounting(
                     mutableListOf<Pair<String, String>>().let {
                         it.addAll(tableData)
                         it[index] = Pair(tableData[index].first, str)
-                        viewModel.setCurrentTableData(monthIndex, it)
+                        viewModel.setCurrentTableData(data = it)
                     }
                 }
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(onClick = {
+        Button(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onClick = {
                 isAddItemDialog = true
-            }) {
-                Text(text = "+")
             }
+        ) {
+            Text(text = "+")
         }
         if (isAddItemDialog) {
-            AddItemDialog { text ->
-                mutableListOf<Pair<String, String>>().let {
-                    it.addAll(tableData)
-                    it.add(Pair(text, ""))
-                    viewModel.monthlyData.value[monthIndex]?.data = it
-                }
-                isAddItemDialog = false
-            }
+            AddItemDialog(
+                onAdd = { text ->
+                    if (text.isEmpty()) return@AddItemDialog
+                    mutableListOf<Pair<String, String>>().let { list ->
+                        list.addAll(tableData)
+                        list.add(Pair(text, ""))
+                        viewModel.setCurrentTableData(data = list)
+                    }
+                    isAddItemDialog = false
+                },
+                onCancel = { isAddItemDialog = false }
+            )
         }
     }
 }
@@ -105,12 +92,12 @@ fun MonthlyAccounting(
 // 增加項目的 dialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddItemDialog(onAdd: (String) -> Unit) {
+fun AddItemDialog(onAdd: (String) -> Unit, onCancel: () -> Unit) {
     var value by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue("", TextRange(0, 7)))
     }
     AlertDialog(
-        onDismissRequest = {},
+        onDismissRequest = { onCancel() },
         title = { Text(text = stringResource(R.string.add_item)) },
         text = {
             Row(
@@ -129,6 +116,11 @@ fun AddItemDialog(onAdd: (String) -> Unit) {
             TextButton(onClick = { onAdd(value.text) }) {
                 Text(stringResource(R.string.ok))
             }
+        },
+        dismissButton = {
+            TextButton(onClick = { onCancel() }) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     )
 }
@@ -137,6 +129,7 @@ fun AddItemDialog(onAdd: (String) -> Unit) {
 @Composable
 fun GreetingPreview() {
     FullMoonMoneyTheme {
-        MonthlyAccounting()
+        val monthlyAccountingViewModel = MonthlyAccountingViewModel()
+        MonthlyAccounting(monthlyAccountingViewModel)
     }
 }
