@@ -10,8 +10,9 @@ class MonthlyAccountingViewModel : ViewModel() {
 
     var netWorth = mutableStateOf(0)
     private var monthlyData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
-    private var monthIndex = mutableStateOf(1)
+    var selectedDate = mutableStateOf(Pair(2023, 1))
     private var currentMonthlyCategory = mutableStateOf(MonthlyCategory.Income)
+    var monthlyCategory = mutableStateOf(MonthlyCategory.Income)
     val monthlyCategories: List<MonthlyCategory> = listOf(
         MonthlyCategory.Income,
         MonthlyCategory.Invest,
@@ -22,54 +23,44 @@ class MonthlyAccountingViewModel : ViewModel() {
     init {
         // 測試資料
         MonthlyData().let {
-            it.data[1] = listOf(Pair("A 銀行", ""), Pair("B 銀行", ""), Pair("現金", ""))
-            it.data[9] = listOf(Pair("B 銀行", ""), Pair("現金", ""))
+            it.data["2023/1"] = listOf(Pair("A 銀行", ""), Pair("B 銀行", ""), Pair("現金", ""))
+            it.data["2023/9"] = listOf(Pair("B 銀行", ""), Pair("現金", ""))
             monthlyData.value[MonthlyCategory.Income] = it
         }
     }
 
-    fun setCurrentStatus(monthlyCategory: MonthlyCategory, index: Int) {
+    fun setCurrentStatus(monthlyCategory: MonthlyCategory, date: Pair<Int, Int>) {
         currentMonthlyCategory.value = monthlyCategory
-        monthIndex.value = index
+        selectedDate.value = date
     }
 
     fun setCurrentTableData(
-        index: Int = monthIndex.value,
         data: List<Pair<String, String>>,
         monthlyCategory: MonthlyCategory = currentMonthlyCategory.value
     ) {
-        monthlyData.value[monthlyCategory]?.data?.set(index, data)
+        monthlyData.value[monthlyCategory]?.data?.set(getMonthlyDataKey(), data)
     }
 
     fun getMonthlyData(): List<Pair<String, String>> {
-        if (monthlyData.value.containsKey(currentMonthlyCategory.value)) {
-            if (monthlyData.value[currentMonthlyCategory.value]?.data?.containsKey(monthIndex.value) == true) {
-                // 都有
-                monthlyData.value[currentMonthlyCategory.value]?.data?.get(monthIndex.value)?.let {
-                    return it
-                }
-            } else {
-                // 有MonthlyCategory,沒有monthIndex
-                monthlyData.value[currentMonthlyCategory.value]?.data?.get(monthIndex.value)?.let {
-                    return it
-                }
-            }
-        } else {
+        if (!monthlyData.value.containsKey(currentMonthlyCategory.value)) {
             // 沒有MonthlyCategory
             MonthlyData().let {
-                it.data[monthIndex.value] = listOf()
+                it.data[selectedDate.value.second.toString()] = listOf()
                 monthlyData.value[currentMonthlyCategory.value] = it
             }
-            monthlyData.value[currentMonthlyCategory.value]?.data?.get(monthIndex.value)?.let {
-                return it
-            }
         }
+        monthlyData.value[currentMonthlyCategory.value]?.data?.get(getMonthlyDataKey())
+            ?.let { return it }
         return listOf()
+    }
+
+    private fun getMonthlyDataKey(): String {
+        return "${selectedDate.value.first}/${selectedDate.value.second}"
     }
 }
 
 data class MonthlyData(
-    var data: SnapshotStateMap<Int, List<Pair<String, String>>> = mutableStateMapOf()
+    var data: SnapshotStateMap<String, List<Pair<String, String>>> = mutableStateMapOf()
 )
 
 enum class MonthlyCategory(
