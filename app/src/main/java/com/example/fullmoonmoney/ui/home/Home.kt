@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.ui.generalAccounting.GeneralAccounting
 import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyAccounting
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
@@ -71,11 +72,7 @@ fun Home(
         ) {
             when (homeViewModel.homeCategories[state]) {
                 HomeCategory.Monthly -> MonthlyAccounting()
-                HomeCategory.General -> Text(
-                    text = stringResource(R.string.general_accounting),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                HomeCategory.General -> GeneralAccounting()
 
                 HomeCategory.Assets -> Text(
                     text = stringResource(R.string.assets),
@@ -95,7 +92,7 @@ fun Home(
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun HomePreview() {
     FullMoonMoneyTheme {
         Home()
     }

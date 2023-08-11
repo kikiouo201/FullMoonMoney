@@ -1,32 +1,24 @@
 package com.example.fullmoonmoney.ui.monthlyAccounting
 
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePicker
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,8 +36,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
+import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
-import java.util.Calendar
 
 // 月記帳
 @Composable
@@ -249,7 +241,13 @@ fun AddFixedItemDialog(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
-                itemData.forEach { Text(text = it) }
+                itemData.forEach {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 15.dp),
+                        text = it,
+                        textAlign = TextAlign.Center
+                    )
+                }
                 Row(
                     modifier = Modifier.padding(vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -278,55 +276,6 @@ fun AddFixedItemDialog(
             }
         }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MonthDropdownMenu(selectedDate: Pair<Int, Int>, onSelected: (Pair<Int, Int>) -> Unit) {
-    // TODO 改成只選月日
-    var expanded by remember { mutableStateOf(false) }
-    val calendar = Calendar.getInstance()
-    calendar[Calendar.YEAR] = selectedDate.first
-    calendar[Calendar.MONTH] = selectedDate.second
-    val datePickerState =
-        rememberDatePickerState(initialDisplayedMonthMillis = calendar.timeInMillis)
-
-    Box {
-        IconButton(modifier = Modifier.width(80.dp),
-            onClick = { expanded = true }) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "${selectedDate.first}/${selectedDate.second}")
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    modifier = Modifier.fillMaxHeight(),
-                    contentDescription = ""
-                )
-            }
-        }
-        if (expanded) {
-            DatePickerDialog(
-                onDismissRequest = { expanded = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        datePickerState.selectedDateMillis?.let {
-                            calendar.timeInMillis = it
-                        }
-                        onSelected(Pair(calendar[Calendar.YEAR], calendar[Calendar.MONTH] + 1))
-                        expanded = false
-                    }) {
-                        Text(stringResource(R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { expanded = false }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
-    }
 }
 
 @Preview(showBackground = true)

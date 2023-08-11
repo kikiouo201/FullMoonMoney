@@ -25,7 +25,7 @@ class MonthlyAccountingViewModel : ViewModel() {
         MonthlyData().let {
             it.data["2023/1"] = listOf(Pair("A 銀行", ""), Pair("B 銀行", ""), Pair("現金", ""))
             it.data["2023/9"] = listOf(Pair("B 銀行", ""), Pair("現金", ""))
-            it.itemData = mutableListOf("A 銀行", "B 銀行", "現金")
+            it.fixedItem = mutableListOf("A 銀行", "B 銀行", "現金")
             allMonthlyData.value[MonthlyCategory.Income] = it
         }
         setMonthlyData()
@@ -48,12 +48,12 @@ class MonthlyAccountingViewModel : ViewModel() {
     }
 
     fun setItemData(item: String) {
-        allMonthlyData.value[currentMonthlyCategory.value]?.itemData?.add(item)
+        allMonthlyData.value[currentMonthlyCategory.value]?.fixedItem?.add(item)
         setMonthlyData()
     }
 
     fun getItemData(): List<String> {
-        return allMonthlyData.value[currentMonthlyCategory.value]?.itemData ?: listOf()
+        return allMonthlyData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
     }
 
     private fun setMonthlyData() {
@@ -61,7 +61,7 @@ class MonthlyAccountingViewModel : ViewModel() {
             // 沒有 MonthlyCategory
             MonthlyData().let { monthlyData ->
                 val itemData = mutableListOf<Pair<String, String>>()
-                monthlyData.itemData.forEach { itemData.add(Pair(it, "")) }
+                monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
                 monthlyData.data[getMonthlyDataKey()] = itemData
                 allMonthlyData.value[currentMonthlyCategory.value] = monthlyData
             }
@@ -70,7 +70,7 @@ class MonthlyAccountingViewModel : ViewModel() {
             if (monthlyData.data[getMonthlyDataKey()].isNullOrEmpty()) {
                 // 沒有 MonthlyDataKey
                 val itemData = mutableListOf<Pair<String, String>>()
-                monthlyData.itemData.forEach { itemData.add(Pair(it, "")) }
+                monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
                 monthlyData.data[getMonthlyDataKey()] = itemData
                 selectedTableData.value = itemData
             } else {
@@ -121,7 +121,7 @@ class MonthlyAccountingViewModel : ViewModel() {
 data class MonthlyData(
     var total: SnapshotStateMap<String, Int> = mutableStateMapOf(),
     var data: SnapshotStateMap<String, List<Pair<String, String>>> = mutableStateMapOf(),
-    var itemData: MutableList<String> = mutableListOf()
+    var fixedItem: MutableList<String> = mutableListOf()
 )
 
 enum class MonthlyCategory(
