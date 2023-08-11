@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">FullMoonMoney</string>
+    <string name="item">項目</string>
+    <string name="add_item">新增項目</string>
+    <string name="amount">金額</string>
+    <string name="monthly_accounting">月記帳</string>
+    <string name="general_accounting">一般記帳</string>
+    <string name="assets">資產</string>
+    <string name="project">專案</string>
+    <string name="income">收入</string>
+    <string name="invest">投資</string>
+    <string name="expenditure">支出</string>
+    <string name="debt">負債</string>
+    <string name="price">價錢</string>
+    <string name="ok">確定</string>
+    <string name="cancel">取消</string>
 </resources>
