@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyAccounting
@@ -35,26 +36,35 @@ fun Home(
 ) {
     var state by remember { homeViewModel.state }
 
-    Scaffold(topBar = {
-        TopAppBar(title = {
-            Text("My App")
-        })
-    }, bottomBar = {
-        BottomAppBar(Modifier.fillMaxWidth()) {
-            homeViewModel.homeCategories.forEachIndexed { index, category ->
-                NavigationBarItem(selected = state == index, onClick = { state = index }, icon = {
-                    Icon(
-                        imageVector = category.icon,
-                        contentDescription = stringResource(category.categoryName)
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {
+                Text("My App")
+            })
+        },
+        bottomBar = {
+            BottomAppBar(Modifier.fillMaxWidth()) {
+                homeViewModel.homeCategories.forEachIndexed { index, category ->
+                    NavigationBarItem(
+                        selected = state == index,
+                        onClick = { state = index },
+                        icon = {
+                            Icon(
+                                imageVector = category.icon,
+                                contentDescription = stringResource(category.categoryName)
+                            )
+                        },
+                        label = {
+                            Text(stringResource(category.categoryName))
+                        }
                     )
-                }, label = {
-                    Text(stringResource(category.categoryName))
-                })
+                }
             }
         }
-    }) { paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
+                .padding(15.dp)
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
