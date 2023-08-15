@@ -8,7 +8,7 @@ import com.example.fullmoonmoney.R
 
 class MonthlyAccountingViewModel : ViewModel() {
 
-    private var allMonthlyData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
+    private var allTableData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
     var currentMonthlyCategory = mutableStateOf(MonthlyCategory.Income)
     var netWorth = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
@@ -26,7 +26,7 @@ class MonthlyAccountingViewModel : ViewModel() {
             it.data["2023/1"] = listOf(Pair("A 銀行", ""), Pair("B 銀行", ""), Pair("現金", ""))
             it.data["2023/9"] = listOf(Pair("B 銀行", ""), Pair("現金", ""))
             it.fixedItem = mutableListOf("A 銀行", "B 銀行", "現金")
-            allMonthlyData.value[MonthlyCategory.Income] = it
+            allTableData.value[MonthlyCategory.Income] = it
         }
         setMonthlyData()
     }
@@ -38,35 +38,35 @@ class MonthlyAccountingViewModel : ViewModel() {
     }
 
     fun setCurrentTableData(data: List<Pair<String, String>>) {
-        allMonthlyData.value[currentMonthlyCategory.value]?.data?.set(getMonthlyDataKey(), data)
+        allTableData.value[currentMonthlyCategory.value]?.data?.set(getMonthlyDataKey(), data)
         setMonthlyData()
     }
 
     fun getTotal(): Int {
-        return allMonthlyData.value[currentMonthlyCategory.value]?.total?.get(getMonthlyDataKey())
+        return allTableData.value[currentMonthlyCategory.value]?.total?.get(getMonthlyDataKey())
             ?: 0
     }
 
     fun setItemData(item: String) {
-        allMonthlyData.value[currentMonthlyCategory.value]?.fixedItem?.add(item)
+        allTableData.value[currentMonthlyCategory.value]?.fixedItem?.add(item)
         setMonthlyData()
     }
 
     fun getItemData(): List<String> {
-        return allMonthlyData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
+        return allTableData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
     }
 
     private fun setMonthlyData() {
-        if (!allMonthlyData.value.containsKey(currentMonthlyCategory.value)) {
+        if (!allTableData.value.containsKey(currentMonthlyCategory.value)) {
             // 沒有 MonthlyCategory
             MonthlyData().let { monthlyData ->
                 val itemData = mutableListOf<Pair<String, String>>()
                 monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
                 monthlyData.data[getMonthlyDataKey()] = itemData
-                allMonthlyData.value[currentMonthlyCategory.value] = monthlyData
+                allTableData.value[currentMonthlyCategory.value] = monthlyData
             }
         }
-        allMonthlyData.value[currentMonthlyCategory.value]?.let { monthlyData ->
+        allTableData.value[currentMonthlyCategory.value]?.let { monthlyData ->
             if (monthlyData.data[getMonthlyDataKey()].isNullOrEmpty()) {
                 // 沒有 MonthlyDataKey
                 val itemData = mutableListOf<Pair<String, String>>()
@@ -99,13 +99,13 @@ class MonthlyAccountingViewModel : ViewModel() {
                 total += it.second.toInt()
             }
         }
-        allMonthlyData.value[currentMonthlyCategory.value]?.total?.set(getMonthlyDataKey(), total)
+        allTableData.value[currentMonthlyCategory.value]?.total?.set(getMonthlyDataKey(), total)
     }
 
     // 儲存淨值
     private fun setNetWorth() {
         netWorth.value = 0
-        allMonthlyData.value.forEach { total ->
+        allTableData.value.forEach { total ->
             total.value.total.forEach {
                 if (it.key == getMonthlyDataKey()) {
                     when (total.key) {
