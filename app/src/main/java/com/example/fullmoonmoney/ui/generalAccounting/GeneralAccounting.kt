@@ -1,5 +1,6 @@
 package com.example.fullmoonmoney.ui.generalAccounting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,13 +48,6 @@ fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        Text(
-            text = stringResource(R.string.general_accounting),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(vertical = 15.dp),
-            style = MaterialTheme.typography.bodyLarge
-        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,7 +75,7 @@ fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
             AccountingItem(it)
         }
         if (isAddFixedItemDialog) {
-            AddFixedItemDialog(
+            AddItemDialog(
                 onAdd = { item, price, project ->
                     viewModel.setCurrentTableData(
                         AccountingDetail(
@@ -119,9 +113,17 @@ fun AccountingItem(detail: AccountingDetail) {
             Text(text = "$${detail.price}")
         }
         detail.project.forEach {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "${stringResource(id = R.string.project)} : ")
-                Text(text = it)
+                Text(
+                    text = it,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(5.dp)
+                        )
+                        .padding(1.dp)
+                )
             }
         }
     }
@@ -129,7 +131,7 @@ fun AccountingItem(detail: AccountingDetail) {
 
 // 增加固定項目的 dialog
 @Composable
-fun AddFixedItemDialog(
+fun AddItemDialog(
     onAdd: (String, String, MutableList<String>) -> Unit,
     onCancel: () -> Unit
 ) {
