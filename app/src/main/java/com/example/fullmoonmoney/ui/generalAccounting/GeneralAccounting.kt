@@ -207,7 +207,7 @@ fun AddItemDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun GeneralAccountingPreview() {
     FullMoonMoneyTheme {
         GeneralAccounting()
     }

@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.generalAccounting.GeneralAccounting
 import com.example.fullmoonmoney.ui.monthlyAccounting.MonthlyAccounting
+import com.example.fullmoonmoney.ui.project.Project
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 // 首頁
@@ -80,11 +81,7 @@ fun Home(
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                HomeCategory.Project -> Text(
-                    text = stringResource(R.string.project),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                HomeCategory.Project -> Project()
             }
         }
     }

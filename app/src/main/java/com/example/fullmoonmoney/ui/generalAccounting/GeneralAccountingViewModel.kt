@@ -1,17 +1,15 @@
 package com.example.fullmoonmoney.ui.generalAccounting
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 
 class GeneralAccountingViewModel : ViewModel() {
 
-    private var allTableData: SnapshotStateMap<String, GeneralAccountingItem> = mutableStateMapOf()
-    var selectedTotal = mutableStateOf(0)
+    private var allTableData = mutableStateMapOf<String, GeneralAccountingItem>()
+    private var selectedTotal = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
-    var selectedTableData: MutableState<GeneralAccountingItem?> = mutableStateOf(null)
+    var selectedTableData = mutableStateOf<GeneralAccountingItem?>(null)
 
     init {
         // 測試資料
