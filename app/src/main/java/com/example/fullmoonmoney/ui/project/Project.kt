@@ -1,6 +1,7 @@
 package com.example.fullmoonmoney.ui.project
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +42,7 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 @Composable
 fun Project(viewModel: ProjectViewModel = viewModel()) {
+    val selectedData by remember { mutableStateOf(viewModel.selectedData) }
     val dataList by remember { mutableStateOf(viewModel.dataList) }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
 
@@ -53,6 +55,18 @@ fun Project(viewModel: ProjectViewModel = viewModel()) {
             text = stringResource(R.string.project),
             modifier = Modifier.align(Alignment.CenterHorizontally),
             style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = selectedData.value,
+            color = Color.White,
+            modifier = Modifier
+                .padding(5.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(10.dp),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
         )
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -80,11 +94,18 @@ fun Project(viewModel: ProjectViewModel = viewModel()) {
                         modifier = Modifier
                             .padding(5.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .clickable { viewModel.setSelectedData(it) }
+                            .background(
+                                if (it == selectedData.value) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                }
+                            )
                             .padding(10.dp),
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }

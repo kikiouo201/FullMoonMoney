@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 
 class ProjectViewModel : ViewModel() {
 
+    val selectedData = mutableStateOf("")
     val dataList = mutableStateOf(listOf<String>())
     var selectedDate = mutableStateOf(Pair(2023, 1))
 
     init {
         dataList.value = listOf("午餐", "晚餐", "早餐")
+        selectedData.value = dataList.value[0]
     }
 
     fun setCurrentStatus(date: Pair<Int, Int>) {
@@ -24,5 +26,9 @@ class ProjectViewModel : ViewModel() {
             detailList.add(data)
             dataList.value = detailList
         }
+    }
+
+    fun setSelectedData(data: String) {
+        selectedData.value = data
     }
 }
