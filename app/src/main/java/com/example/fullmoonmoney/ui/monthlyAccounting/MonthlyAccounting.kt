@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
@@ -37,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.ui.custom.MyLineChart
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
@@ -64,7 +64,9 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             }
         }
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
@@ -85,14 +87,23 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                 )
             }
         }
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .wrapContentHeight(align = Alignment.CenterVertically),
-            textAlign = TextAlign.Center,
-            text = "圖表",
-            style = MaterialTheme.typography.bodyLarge
+        MyLineChart(
+            Modifier.height(100.dp),
+            MaterialTheme.colorScheme.onPrimary,
+            listOf(
+                listOf(3000f, 2000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 4000f),
+                listOf(6000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 2000f),
+                listOf(5000f, 1000f)
+            )
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -128,7 +139,7 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
     Column(Modifier.fillMaxSize()) {
         TableHeaderCell(
             textList = titleData,
-            color = MaterialTheme.colorScheme.primaryContainer
+            color = MaterialTheme.colorScheme.primary
         )
         tableData.forEachIndexed { index, data ->
             var mData = remember { mutableStateOf(data) }

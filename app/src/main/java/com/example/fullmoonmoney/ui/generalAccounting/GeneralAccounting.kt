@@ -100,7 +100,7 @@ fun AccountingItem(detail: AccountingDetail) {
             .fillMaxWidth()
             .border(
                 width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(10.dp)
@@ -119,7 +119,7 @@ fun AccountingItem(detail: AccountingDetail) {
                     text = it,
                     modifier = Modifier
                         .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            color = MaterialTheme.colorScheme.primary,
                             shape = RoundedCornerShape(5.dp)
                         )
                         .padding(1.dp)
