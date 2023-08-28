@@ -1,26 +1,85 @@
 package com.example.fullmoonmoney.ui.custom
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.PercentFormatter
+
 
 @Composable
-fun MyLineChart(modifier: Modifier, textColor: Color, data: List<List<Float>>) {
+fun MonthPieChart(modifier: Modifier, textColor: Color, total: String) {
+    AndroidView(
+        modifier = modifier.fillMaxWidth(),
+        factory = { context ->
+            val pieChart = PieChart(context)
+            pieChart.setUsePercentValues(true) // 使用百分比
+            pieChart.description.isEnabled = false // 隱藏說明
+            pieChart.setEntryLabelColor(textColor.toArgb()) // 圖表內標籤文字的顏色
+            pieChart.setEntryLabelTextSize(12f) // 圖表內標籤文字的大小
+            pieChart.setHoleColor(R.color.transparent) // 設置孔顏色
+            pieChart.holeRadius = 50f // 設置孔半徑
+            pieChart.transparentCircleRadius = 0f  // 設置孔半透明環的寬度
+            pieChart.centerText = "淨值\n${total}" // 設置孔中的文字
+            pieChart.setCenterTextColor(textColor.toArgb()) // 設置孔中的文字顏色
+            pieChart.legend.textColor = textColor.toArgb() // 標籤文字的顏色
+
+            val entries: ArrayList<PieEntry> = ArrayList()
+            entries.add(PieEntry(60f, context.getString(R.string.income)))
+            entries.add(PieEntry(20f, context.getString(R.string.invest)))
+            entries.add(PieEntry(10f, context.getString(R.string.expenditure)))
+            entries.add(PieEntry(10f, context.getString(R.string.debt)))
+
+            val dataSet = PieDataSet(entries, context.getString(R.string.monthly_accounting))
+            dataSet.setDrawIcons(false)
+            dataSet.sliceSpace = 2f // 餅狀項目之間的間距
+            dataSet.selectionShift = 10f // 餅狀項目選擇時放大的距離
+            dataSet.colors = listOf(
+                ContextCompat.getColor(context, R.color.orange_200),
+                ContextCompat.getColor(context, R.color.purple_200),
+                ContextCompat.getColor(context, R.color.teal_700),
+                ContextCompat.getColor(context, R.color.blue_200),
+            )
+
+            val data = PieData(dataSet)
+            data.setValueFormatter(PercentFormatter())
+            data.setValueTextSize(12f)
+            data.setValueTextColor(textColor.toArgb())
+            data.setDrawValues(true)
+
+            pieChart.data = data
+            pieChart.invalidate()
+
+            pieChart
+        }
+    ) {
+        it.centerText = "淨值\n${total}"
+        it.notifyDataSetChanged()
+        it.invalidate()
+    }
+}
+
+@Composable
+fun MonthBarChart(modifier: Modifier, textColor: Color, data: List<List<Float>>) {
     AndroidView(
         modifier = modifier.fillMaxWidth(),
         factory = { context ->
@@ -81,12 +140,12 @@ fun getMonthString(): List<String> {
     return monthString
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun LineChartPreview() {
+fun MonthBarChartPreview() {
     FullMoonMoneyTheme {
-        MyLineChart(
-            Modifier.fillMaxSize(),
+        MonthBarChart(
+            Modifier.height(100.dp),
             MaterialTheme.colorScheme.onPrimary,
             listOf(
                 listOf(3000f, 2000f),
@@ -102,6 +161,18 @@ fun LineChartPreview() {
                 listOf(5000f, 2000f),
                 listOf(5000f, 1000f)
             )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PieChartPreview() {
+    FullMoonMoneyTheme {
+        MonthPieChart(
+            Modifier.height(300.dp),
+            MaterialTheme.colorScheme.onPrimary,
+            "9,992"
         )
     }
 }

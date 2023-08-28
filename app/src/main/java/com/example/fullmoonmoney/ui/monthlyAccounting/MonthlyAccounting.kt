@@ -36,7 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
-import com.example.fullmoonmoney.ui.custom.MyLineChart
+import com.example.fullmoonmoney.ui.custom.MonthBarChart
+import com.example.fullmoonmoney.ui.custom.MonthPieChart
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
@@ -63,6 +64,11 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                 viewModel.setCurrentStatus(monthlyCategory, it)
             }
         }
+        MonthPieChart(
+            Modifier.height(300.dp),
+            MaterialTheme.colorScheme.onPrimary,
+            "$netWorth"
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -87,7 +93,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                 )
             }
         }
-        MyLineChart(
+        MonthBarChart(
             Modifier.height(100.dp),
             MaterialTheme.colorScheme.onPrimary,
             listOf(

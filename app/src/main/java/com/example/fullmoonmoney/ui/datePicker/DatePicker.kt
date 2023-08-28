@@ -22,8 +22,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,5 +74,13 @@ fun MonthDropdownMenu(selectedDate: Pair<Int, Int>, onSelected: (Pair<Int, Int>)
                 DatePicker(state = datePickerState)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MonthDropdownMenuPreview() {
+    FullMoonMoneyTheme {
+        MonthDropdownMenu(Pair(2023, 1)) {}
     }
 }
