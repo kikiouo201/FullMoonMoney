@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.ui.custom.MonthBarChart
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
@@ -56,31 +59,55 @@ fun Project(viewModel: ProjectViewModel = viewModel()) {
             modifier = Modifier.align(Alignment.CenterHorizontally),
             style = MaterialTheme.typography.bodyLarge
         )
-        Text(
-            text = selectedData.value,
-            color = Color.White,
-            modifier = Modifier
-                .padding(5.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp),
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            textAlign = TextAlign.Center,
+        Row {
+            Text(
+                text = selectedData.value,
+                color = Color.White,
+                modifier = Modifier
+                    .padding(5.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(10.dp),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End
+            ) {
+                MonthDropdownMenu(viewModel.selectedDate.value) {
+                    viewModel.setCurrentStatus(it)
+                }
+            }
+        }
+        MonthBarChart(
+            Modifier.height(100.dp),
+            MaterialTheme.colorScheme.onPrimary,
+            listOf(
+                listOf(3000f, 2000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 4000f),
+                listOf(6000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 2000f),
+                listOf(5000f, 1000f)
+            )
         )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.End
-        ) {
-            MonthDropdownMenu(viewModel.selectedDate.value) {
-                viewModel.setCurrentStatus(it)
-            }
-            IconButton(onClick = { isAddFixedItemDialog = true }) {
-                Icon(
-                    imageVector = Icons.Filled.Create,
-                    contentDescription = "create"
-                )
-            }
+        IconButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.End),
+            onClick = { isAddFixedItemDialog = true }) {
+            Icon(
+                imageVector = Icons.Filled.Create,
+                contentDescription = "create"
+            )
         }
         LazyVerticalGrid(
             modifier = Modifier.heightIn(max = 700.dp),

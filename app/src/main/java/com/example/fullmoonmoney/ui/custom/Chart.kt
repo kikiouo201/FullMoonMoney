@@ -15,6 +15,7 @@ import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.LegendEntry
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -75,6 +76,74 @@ fun MonthPieChart(modifier: Modifier, textColor: Color, total: String) {
         it.centerText = "淨值\n${total}"
         it.notifyDataSetChanged()
         it.invalidate()
+    }
+}
+
+@Composable
+fun MonthlyAccountingBarChart(modifier: Modifier, textColor: Color) {
+    AndroidView(
+        modifier = modifier.fillMaxWidth(),
+        factory = { context ->
+            val barDataColors = listOf(
+                ContextCompat.getColor(context, R.color.blue_200),
+                ContextCompat.getColor(context, R.color.yellow_200)
+            )
+            val data = listOf(
+                listOf(3000f, 2000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 4000f)
+            )
+            val legends = listOf("預算", "實際花費")
+            val labels = listOf(
+                context.getString(R.string.income),
+                context.getString(R.string.invest),
+                context.getString(R.string.expenditure),
+                context.getString(R.string.debt)
+            )
+
+            val barChart = BarChart(context)
+            barChart.setBackgroundColor(Color.Transparent.toArgb())
+            barChart.description.isEnabled = false
+            barChart.axisLeft.setDrawAxisLine(false)
+            barChart.axisLeft.isEnabled = false
+            barChart.axisRight.setDrawAxisLine(false)
+            barChart.axisRight.isEnabled = false
+            barChart.xAxis.apply {
+                position = XAxis.XAxisPosition.BOTTOM
+                labelCount = data.size
+                valueFormatter = IndexAxisValueFormatter(labels)
+                this.textColor = textColor.toArgb()
+                setDrawAxisLine(false)
+                setDrawGridLines(false)
+            }
+
+            val legendEntry = mutableListOf<LegendEntry>()
+            for (i in legends.indices) {
+                val entry = LegendEntry()
+                entry.formColor = barDataColors[i]
+                entry.label = legends[i]
+                legendEntry.add(entry)
+            }
+            barChart.legend.setCustom(legendEntry)
+            barChart.legend.textColor = textColor.toArgb()
+
+            val chartData = setChartData(data)
+            val barData = BarData()
+
+
+            chartData.forEach {
+                barData.addDataSet(BarDataSet(it, "Label").apply {
+                    colors = barDataColors
+                    valueTextColor = textColor.toArgb()
+                })
+            }
+
+            barChart.data = barData
+            barChart.invalidate()
+
+            barChart
+        }) {
     }
 }
 
@@ -161,6 +230,17 @@ fun MonthBarChartPreview() {
                 listOf(5000f, 2000f),
                 listOf(5000f, 1000f)
             )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MonthlyChartPreview() {
+    FullMoonMoneyTheme {
+        MonthlyAccountingBarChart(
+            Modifier.height(300.dp),
+            MaterialTheme.colorScheme.onPrimary
         )
     }
 }
