@@ -15,8 +15,8 @@ class HomeViewModel : ViewModel() {
     val homeCategories: List<HomeCategory> = listOf(
         HomeCategory.Monthly,
         HomeCategory.General,
-        HomeCategory.Assets,
-        HomeCategory.Project
+        HomeCategory.Project,
+        HomeCategory.Setting
     )
 }
 
@@ -26,6 +26,6 @@ enum class HomeCategory(
 ) {
     Monthly(R.string.monthly_accounting, Icons.Outlined.DateRange),  // 月記帳
     General(R.string.general_accounting, Icons.Outlined.List),  // 一般記帳
-    Assets(R.string.assets, Icons.Outlined.ShoppingCart),   // 資產
-    Project(R.string.project, Icons.Outlined.Star)  // 專案
+    Project(R.string.project, Icons.Outlined.Star),  // 專案
+    Setting(R.string.setting, Icons.Outlined.ShoppingCart)  // 我的
 }
