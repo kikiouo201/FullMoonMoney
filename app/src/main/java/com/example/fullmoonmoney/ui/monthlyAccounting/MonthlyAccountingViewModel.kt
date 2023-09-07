@@ -10,6 +10,7 @@ class MonthlyAccountingViewModel : ViewModel() {
 
     private var allTableData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
     var currentMonthlyCategory = mutableStateOf(MonthlyCategory.Income)
+    var targetPrice = mutableStateOf(30000)
     var netWorth = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
     var selectedTableData = mutableStateOf(listOf<Pair<String, String>>())

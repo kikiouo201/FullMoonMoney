@@ -36,10 +36,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.ui.custom.ProgressIndicator
 import com.example.fullmoonmoney.ui.custom.MonthPieChart
 import com.example.fullmoonmoney.ui.custom.MonthlyAccountingBarChart
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
+import com.example.fullmoonmoney.ui.custom.getProgress
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
@@ -50,6 +52,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
     val selectedDate by remember { viewModel.selectedDate }
     val monthlyCategory by remember { viewModel.currentMonthlyCategory }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
+    val targetPrice by remember { viewModel.targetPrice }
 
     Column {
         Row(
@@ -64,6 +67,14 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                 viewModel.setCurrentStatus(monthlyCategory, it)
             }
         }
+        ProgressIndicator(
+            "淨值 : $netWorth",
+            "$targetPrice :目標",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            progress = getProgress(netWorth, targetPrice)
+        )
         MonthPieChart(
             Modifier.height(300.dp),
             MaterialTheme.colorScheme.onPrimary,
