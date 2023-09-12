@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,11 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.custom.ProgressIndicator
-import com.example.fullmoonmoney.ui.custom.MonthPieChart
 import com.example.fullmoonmoney.ui.custom.MonthlyAccountingBarChart
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
 import com.example.fullmoonmoney.ui.custom.getProgress
+import com.example.fullmoonmoney.ui.dataFormat.formatCurrency
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
@@ -49,10 +50,12 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 @Composable
 fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
     val netWorth by remember { viewModel.netWorth }
+    val targetPrice by remember { viewModel.targetPrice }
+    val currentMoney by remember { viewModel.currentMoney }
+    val monthTargetPrice by remember { viewModel.monthTargetPrice }
     val selectedDate by remember { viewModel.selectedDate }
     val monthlyCategory by remember { viewModel.currentMonthlyCategory }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
-    val targetPrice by remember { viewModel.targetPrice }
 
     Column {
         Row(
@@ -62,23 +65,37 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = "淨值 : $netWorth")
+            Text(text = "淨值 : ${formatCurrency(netWorth)}")
             MonthDropdownMenu(selectedDate) {
                 viewModel.setCurrentStatus(monthlyCategory, it)
             }
         }
         ProgressIndicator(
-            "淨值 : $netWorth",
-            "$targetPrice :目標",
+            progressTitle = "淨值 :",
+            targetTitle = ": 目標",
+            progressText = formatCurrency(netWorth),
+            targetText = formatCurrency(targetPrice),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             progress = getProgress(netWorth, targetPrice)
         )
-        MonthPieChart(
-            Modifier.height(300.dp),
-            MaterialTheme.colorScheme.onPrimary,
-            "$netWorth"
+        ProgressIndicator(
+            progressTitle = "目前 :",
+            targetTitle = ": 需存",
+            progressText = formatCurrency(currentMoney),
+            targetText = formatCurrency(monthTargetPrice),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            progress = getProgress(currentMoney, monthTargetPrice),
+            progressColor = colorResource(R.color.teal_700),
+            backgroundColor = colorResource(R.color.orange_200),
+        )
+
+        MonthlyAccountingBarChart(
+            Modifier.height(100.dp),
+            MaterialTheme.colorScheme.onPrimary
         )
         Row(
             modifier = Modifier
@@ -104,10 +121,6 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                 )
             }
         }
-        MonthlyAccountingBarChart(
-            Modifier.height(100.dp),
-            MaterialTheme.colorScheme.onPrimary
-        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
@@ -135,7 +148,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 
 @Composable
 fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
-    val titleData = listOf(R.string.amount, R.string.item)
+    val titleData = listOf(R.string.item, R.string.amount)
     val tableData by remember { viewModel.selectedTableData }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
@@ -144,6 +157,23 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
             textList = titleData,
             color = MaterialTheme.colorScheme.primary
         )
+        Row(
+            modifier = Modifier.padding(5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "總共 : ",
+                Modifier
+                    .weight(1f)
+                    .padding(10.dp)
+            )
+            Text(
+                text = viewModel.getTotal().toString(),
+                Modifier
+                    .weight(1f)
+                    .padding(10.dp)
+            )
+        }
         tableData.forEachIndexed { index, data ->
             var mData = remember { mutableStateOf(data) }
             mData.value = data
@@ -166,23 +196,6 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
             onClick = { isAddItemDialog = true }
         ) {
             Text(text = "+")
-        }
-        Row(
-            modifier = Modifier.padding(5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "總共 : ",
-                Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-            )
-            Text(
-                text = viewModel.getTotal().toString(),
-                Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-            )
         }
         if (isAddItemDialog) {
             AddItemDialog(

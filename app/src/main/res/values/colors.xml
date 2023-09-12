@@ -8,7 +8,10 @@
     <color name="yellow_200">#FFF79E</color>
     <color name="yellow_500">#ffed70</color>
     <color name="orange_200">#ffb570</color>
-    <color name="blue_200">#FF8FCBFF</color>
+    <color name="blue_200">#99CCFF</color>
+    <color name="blue_700">#0078F0</color>
+    <color name="blue_250">#65A1DC</color>
+    <color name="blue_750">#2878C8</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
