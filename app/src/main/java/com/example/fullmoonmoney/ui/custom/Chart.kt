@@ -169,8 +169,8 @@ fun MonthBarChart(modifier: Modifier, textColor: Color, data: List<List<Float>>)
         }) {}
 }
 
-fun getBarEntry(data: List<List<Float>>): MutableList<MutableList<BarEntry>> {
-    return mutableListOf<MutableList<BarEntry>>().apply {
+fun getBarEntry(data: List<List<Float>>) =
+    mutableListOf<MutableList<BarEntry>>().apply {
         data.forEachIndexed { index, floats ->
             this.add(
                 index,
@@ -182,10 +182,9 @@ fun getBarEntry(data: List<List<Float>>): MutableList<MutableList<BarEntry>> {
             )
         }
     }
-}
 
-fun getLegendEntry(legends: List<String>, barDataColors: List<Int>): MutableList<LegendEntry> {
-    return mutableListOf<LegendEntry>().apply {
+fun getLegendEntry(legends: List<String>, barDataColors: List<Int>) =
+    mutableListOf<LegendEntry>().apply {
         barDataColors.forEachIndexed { index, barDataColor ->
             this.add(
                 LegendEntry().apply {
@@ -195,15 +194,13 @@ fun getLegendEntry(legends: List<String>, barDataColors: List<Int>): MutableList
             )
         }
     }
-}
 
-fun getMonthString(): List<String> {
-    val monthString = mutableListOf<String>()
-    for (i in 1..12) {
-        monthString.add("${i}月")
+fun getMonthString(): List<String> =
+    mutableListOf<String>().apply {
+        for (i in 1..12) {
+            this.add("${i}月")
+        }
     }
-    return monthString
-}
 
 @Preview(showBackground = true)
 @Composable

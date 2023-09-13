@@ -22,7 +22,7 @@ class HomeViewModel : ViewModel() {
 
 enum class HomeCategory(
     val categoryName: Int,
-    val icon: ImageVector
+    val icon: ImageVector,
 ) {
     Monthly(R.string.monthly_accounting, Icons.Outlined.DateRange),  // 月記帳
     General(R.string.general_accounting, Icons.Outlined.List),  // 一般記帳

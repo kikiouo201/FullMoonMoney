@@ -16,7 +16,6 @@ class ProjectViewModel : ViewModel() {
 
     fun setCurrentStatus(date: Pair<Int, Int>) {
         selectedDate.value = date
-        mutableListOf(dataList.value)
     }
 
     fun setCurrentTableData(data: String) {

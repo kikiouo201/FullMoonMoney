@@ -153,7 +153,7 @@ fun Project(viewModel: ProjectViewModel = viewModel()) {
 @Composable
 fun AddItemDialog(
     onAdd: (String) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     var itemValue by remember { mutableStateOf("") }
 

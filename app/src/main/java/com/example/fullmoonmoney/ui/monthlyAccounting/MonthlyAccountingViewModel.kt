@@ -45,19 +45,16 @@ class MonthlyAccountingViewModel : ViewModel() {
         setMonthlyData()
     }
 
-    fun getTotal(): Int {
-        return allTableData.value[currentMonthlyCategory.value]?.total?.get(getMonthlyDataKey())
-            ?: 0
-    }
+    fun getTotal(): Int =
+        allTableData.value[currentMonthlyCategory.value]?.total?.get(getMonthlyDataKey()) ?: 0
 
     fun setItemData(item: String) {
         allTableData.value[currentMonthlyCategory.value]?.fixedItem?.add(item)
         setMonthlyData()
     }
 
-    fun getItemData(): List<String> {
-        return allTableData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
-    }
+    fun getItemData(): List<String> =
+        allTableData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
 
     private fun setMonthlyData() {
         if (!allTableData.value.containsKey(currentMonthlyCategory.value)) {
@@ -90,9 +87,7 @@ class MonthlyAccountingViewModel : ViewModel() {
         setNetWorth()
     }
 
-    private fun getMonthlyDataKey(): String {
-        return "${selectedDate.value.first}/${selectedDate.value.second}"
-    }
+    private fun getMonthlyDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
 
     // 儲存總共
     private fun setTotal() {
@@ -124,11 +119,11 @@ class MonthlyAccountingViewModel : ViewModel() {
 data class MonthlyData(
     var total: SnapshotStateMap<String, Int> = mutableStateMapOf(),
     var data: SnapshotStateMap<String, List<Pair<String, String>>> = mutableStateMapOf(),
-    var fixedItem: MutableList<String> = mutableListOf()
+    var fixedItem: MutableList<String> = mutableListOf(),
 )
 
 enum class MonthlyCategory(
-    val categoryName: Int
+    val categoryName: Int,
 ) {
     Income(R.string.income),  // 收入
     Invest(R.string.invest),  // 投資

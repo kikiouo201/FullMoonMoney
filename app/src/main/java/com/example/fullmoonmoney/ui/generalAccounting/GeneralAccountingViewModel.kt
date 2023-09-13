@@ -49,9 +49,7 @@ class GeneralAccountingViewModel : ViewModel() {
         }
     }
 
-    fun getTotal(): Int {
-        return selectedTableData.value?.total ?: 0
-    }
+    fun getTotal(): Int = selectedTableData.value?.total ?: 0
 
     private fun setTotal(generalAccounting: GeneralAccountingItem): Int {
         var total = 0
@@ -61,9 +59,7 @@ class GeneralAccountingViewModel : ViewModel() {
         return total
     }
 
-    private fun getSelectedDataKey(): String {
-        return "${selectedDate.value.first}/${selectedDate.value.second}"
-    }
+    private fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
 
     private fun setSelectedData() {
         if (allTableData[getSelectedDataKey()] == null) {
@@ -81,11 +77,11 @@ class GeneralAccountingViewModel : ViewModel() {
 
 data class GeneralAccountingItem(
     var total: Int = 0,
-    var detailList: MutableList<AccountingDetail> = mutableListOf()
+    var detailList: MutableList<AccountingDetail> = mutableListOf(),
 )
 
 data class AccountingDetail(
     var price: Int = 0,
     var itemName: String = "",
-    var project: MutableList<String> = mutableListOf()
+    var project: MutableList<String> = mutableListOf(),
 )

@@ -34,7 +34,7 @@ fun ProgressIndicator(
     progress: Float,
     progressColor: Color = colorResource(R.color.blue_750),
     backgroundColor: Color = colorResource(R.color.blue_250),
-    clipShape: Shape = RoundedCornerShape(5.dp)
+    clipShape: Shape = RoundedCornerShape(5.dp),
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -99,8 +99,6 @@ fun LinearProgressIndicatorPreview() {
                 .fillMaxWidth()
                 .padding(10.dp),
             progress = 0.1f,
-//            colorResource(R.color.blue_750),
-//            colorResource(R.color.blue_250),
         )
     }
 }

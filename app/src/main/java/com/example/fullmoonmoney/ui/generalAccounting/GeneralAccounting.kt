@@ -37,9 +37,9 @@ import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 @Composable
-fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
+fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) =
     GeneralAccountingTable(viewModel)
-}
+
 
 @Composable
 fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
@@ -133,7 +133,7 @@ fun AccountingItem(detail: AccountingDetail) {
 @Composable
 fun AddItemDialog(
     onAdd: (String, String, MutableList<String>) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     var itemValue by remember { mutableStateOf("") }
     var priceValue by remember { mutableStateOf("") }

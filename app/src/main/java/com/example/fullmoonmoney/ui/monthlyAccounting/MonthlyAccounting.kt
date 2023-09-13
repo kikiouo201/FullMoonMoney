@@ -253,7 +253,7 @@ fun AddItemDialog(onAdd: (String) -> Unit, onCancel: () -> Unit) {
 fun AddFixedItemDialog(
     itemData: List<String>,
     onAdd: (String) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     var value by remember { mutableStateOf("") }
 

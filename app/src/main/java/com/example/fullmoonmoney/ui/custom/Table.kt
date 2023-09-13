@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 fun TableHeaderCell(
     @StringRes textList: List<Int>,
     color: Color,
-    weight: Float = 1f
+    weight: Float = 1f,
 ) {
     Row {
         textList.forEach {
@@ -43,7 +43,7 @@ fun TableHeaderCell(
 fun TableContentCell(
     text: String,
     textFieldText: String,
-    onChangeText: (String) -> Unit
+    onChangeText: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier.padding(5.dp),
