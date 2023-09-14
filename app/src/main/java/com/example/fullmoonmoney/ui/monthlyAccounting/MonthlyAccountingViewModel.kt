@@ -94,7 +94,7 @@ class MonthlyAccountingViewModel : ViewModel() {
         var total = 0
         selectedTableData.value.forEach {
             if (it.second != "") {
-                total += it.second.toInt()
+                total += it.second.toIntOrNull() ?: 0
             }
         }
         allTableData.value[currentMonthlyCategory.value]?.total?.set(getMonthlyDataKey(), total)

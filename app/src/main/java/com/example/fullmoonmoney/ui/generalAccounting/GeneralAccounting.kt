@@ -80,7 +80,7 @@ fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
                     viewModel.setCurrentTableData(
                         AccountingDetail(
                             itemName = item,
-                            price = price.toInt(),
+                            price = price.toIntOrNull() ?: 0,
                             project = project
                         )
                     )

@@ -21,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
-import java.math.RoundingMode
 import java.text.DecimalFormat
 
 @Composable
@@ -78,13 +77,11 @@ fun ProgressIndicator(
 
 }
 
-fun getProgress(present: Int, target: Int): Float {
-    if (present == 0 || target == 0) return 0f
-
-    val format = DecimalFormat("0.##")
-    format.roundingMode = RoundingMode.FLOOR
-    return format.format(present.toFloat().div(target)).toFloat()
-}
+fun getProgress(present: Int, target: Int): Float =
+    if (present == 0 || target == 0)
+        0f
+    else
+        DecimalFormat("#.##").format(present.toFloat() / target).toFloat()
 
 @Preview(showBackground = true)
 @Composable
