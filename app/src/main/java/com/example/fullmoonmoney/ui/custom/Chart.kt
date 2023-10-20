@@ -195,12 +195,7 @@ fun getLegendEntry(legends: List<String>, barDataColors: List<Int>) =
         }
     }
 
-fun getMonthString(): List<String> =
-    mutableListOf<String>().apply {
-        for (i in 1..12) {
-            this.add("${i}月")
-        }
-    }
+fun getMonthString(): Array<String> = Array(12) { i -> "${i + 1}月" }
 
 @Preview(showBackground = true)
 @Composable

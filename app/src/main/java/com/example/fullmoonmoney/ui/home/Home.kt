@@ -32,7 +32,7 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(),
 ) {
     var state by remember { homeViewModel.state }
 
