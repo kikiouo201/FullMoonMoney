@@ -112,9 +112,9 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                         .clickable { viewModel.setCurrentStatus(it, selectedDate) }
                         .background(
                             if (it == monthlyCategory) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
                                 MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.primaryContainer
                             }
                         )
                         .padding(10.dp)

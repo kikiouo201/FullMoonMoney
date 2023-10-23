@@ -9,7 +9,9 @@ class GeneralAccountingViewModel : ViewModel() {
     private var allTableData = mutableStateMapOf<String, GeneralAccountingItem>()
     private var selectedTotal = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
+    val selectedCategory = mutableStateOf("")
     var selectedTableData = mutableStateOf<GeneralAccountingItem?>(null)
+    val categoryList = mutableStateOf(listOf<String>())
 
     init {
         // 測試資料
@@ -27,13 +29,28 @@ class GeneralAccountingViewModel : ViewModel() {
         list.forEach {
             total += it.price
         }
+        categoryList.value = listOf("午餐", "晚餐", "早餐")
+        selectedCategory.value = categoryList.value[0]
         allTableData[getSelectedDataKey()] = GeneralAccountingItem(total, list)
-        setSelectedData()
+        setSelectedCategory()
+    }
+
+    fun setCurrentCategory(data: String) {
+        categoryList.value.let {
+            val detailList = mutableListOf<String>()
+            detailList.addAll(categoryList.value)
+            detailList.add(data)
+            categoryList.value = detailList
+        }
+    }
+
+    fun setSelectedCategory(data: String) {
+        selectedCategory.value = data
     }
 
     fun setCurrentStatus(date: Pair<Int, Int>) {
         selectedDate.value = date
-        setSelectedData()
+        setSelectedCategory()
     }
 
     fun setCurrentTableData(data: AccountingDetail) {
@@ -61,7 +78,7 @@ class GeneralAccountingViewModel : ViewModel() {
 
     private fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
 
-    private fun setSelectedData() {
+    private fun setSelectedCategory() {
         if (allTableData[getSelectedDataKey()] == null) {
             allTableData[getSelectedDataKey()] = GeneralAccountingItem()
             selectedTableData.value = GeneralAccountingItem()
