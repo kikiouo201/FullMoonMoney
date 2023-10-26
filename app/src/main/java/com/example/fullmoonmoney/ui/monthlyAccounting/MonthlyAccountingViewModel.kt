@@ -37,18 +37,14 @@ class MonthlyAccountingViewModel : ViewModel() {
             it.fixedItem = mutableListOf("A 銀行", "B 銀行", "現金")
             allTableData.value[MonthlyCategory.Income] = it
         }
-
-        Graph.allCategoryDetailsDao.getDetails { monthlyCategory, monthlyDataKey, tableData ->
-            tableData?.let {
-                GlobalScope.launch(Dispatchers.IO) {
-                    initTableData(
-                        MonthlyCategory.valueOf(monthlyCategory),
-                        monthlyDataKey,
-                        it
-                    )
+        GlobalScope.launch(Dispatchers.IO) {
+            Graph.allCategoryDetailsDao.getDetails { monthlyCategory, monthlyDataKey, tableData ->
+                tableData?.let {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        initTableData(MonthlyCategory.valueOf(monthlyCategory), monthlyDataKey, it)
+                    }
                 }
             }
-
         }
     }
 

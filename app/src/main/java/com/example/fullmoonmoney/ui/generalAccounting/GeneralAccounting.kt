@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -45,17 +44,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.data.Category
 import com.example.fullmoonmoney.ui.custom.MonthBarChart
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 @Composable
-fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) =
-    GeneralAccountingTable(viewModel)
-
-
-@Composable
-fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
+fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
     val selectedDate by remember { viewModel.selectedDate }
     val selectedCategory by remember { viewModel.selectedCategory }
     val tableData by remember { viewModel.selectedTableData }
@@ -63,7 +58,7 @@ fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
     var isCategory by remember { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxSize()) {
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -96,143 +91,142 @@ fun GeneralAccountingTable(viewModel: GeneralAccountingViewModel) {
             }
             IconButton(onClick = { isAddFixedItemDialog = true }) {
                 Icon(
-                    imageVector = Icons.Filled.Create,
-                    contentDescription = "create"
+                    imageVector = Icons.Filled.Create, contentDescription = "create"
                 )
             }
         }
         if (isCategory) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(5.dp)
-            ) {
-                Text(
-                    text = selectedCategory,
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(10.dp),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(R.string.category),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                MonthBarChart(
-                    Modifier.height(100.dp), MaterialTheme.colorScheme.onPrimary, listOf(
-                        listOf(3000f, 2000f),
-                        listOf(5000f, 2000f),
-                        listOf(4000f, 3000f),
-                        listOf(5000f, 4000f),
-                        listOf(5000f, 3000f),
-                        listOf(5000f, 4000f),
-                        listOf(5000f, 2000f),
-                        listOf(4000f, 4000f),
-                        listOf(6000f, 2000f),
-                        listOf(4000f, 3000f),
-                        listOf(5000f, 2000f),
-                        listOf(5000f, 1000f)
-                    )
-                )
-                LazyVerticalGrid(
-                    modifier = Modifier.heightIn(max = 700.dp),
-                    columns = GridCells.Fixed(3)
-                ) {
-                    categoryList.value.forEach {
-                        item {
-                            Text(
-                                text = it,
-                                color = Color.White,
-                                modifier = Modifier
-                                    .padding(5.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .clickable { viewModel.setSelectedCategory(it) }
-                                    .background(
-                                        if (it == selectedCategory) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        }
-                                    )
-                                    .padding(10.dp),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
-                }
+            CategoryListAccounting(selectedCategory, categoryList.value) {
+                viewModel.setSelectedCategory(it)
             }
         } else {
-            tableData?.detailList?.forEach {
-                AccountingItem(it)
-            }
+            DetailListAccounting(tableData?.detailList)
         }
 
         if (isAddFixedItemDialog && isCategory) {
-            AddCategoryDialog(
-                onAdd = { item ->
-                    isAddFixedItemDialog = false
-                    viewModel.setCurrentCategory(item)
-                },
-                onCancel = { isAddFixedItemDialog = false }
-            )
+            AddCategoryDialog(onAdd = { item ->
+                isAddFixedItemDialog = false
+                viewModel.setCurrentCategory(item)
+            }, onCancel = { isAddFixedItemDialog = false })
         } else if (isAddFixedItemDialog) {
-            AddItemDialog(
-                onAdd = { item, price, project ->
-                    viewModel.setCurrentTableData(
-                        AccountingDetail(
-                            itemName = item,
-                            price = price.toIntOrNull() ?: 0,
-                            project = project
-                        )
+            AddItemDialog(onAdd = { item, price, project ->
+                viewModel.setCurrentTableData(
+                    AccountingDetail(
+                        itemName = item, price = price.toIntOrNull() ?: 0, projectList = project
                     )
-                    isAddFixedItemDialog = false
-                },
-                onCancel = { isAddFixedItemDialog = false }
-            )
+                )
+                isAddFixedItemDialog = false
+            }, onCancel = { isAddFixedItemDialog = false })
         }
     }
 }
 
 @Composable
-fun AccountingItem(detail: AccountingDetail) {
-    Column(
-        Modifier
-            .padding(10.dp)
-            .fillMaxWidth()
-            .border(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(10.dp)
+fun CategoryListAccounting(
+    selectedCategory: String,
+    categoryList: List<Category>,
+    setSelectedCategory: (String) -> Unit,
+) {
+    Column(Modifier.padding(5.dp)) {
+        Text(
+            text = selectedCategory,
+            color = Color.White,
+            modifier = Modifier
+                .padding(5.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(10.dp),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = stringResource(R.string.category),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        MonthBarChart(
+            Modifier.height(100.dp), MaterialTheme.colorScheme.onPrimary, listOf(
+                listOf(3000f, 2000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 3000f),
+                listOf(5000f, 4000f),
+                listOf(5000f, 2000f),
+                listOf(4000f, 4000f),
+                listOf(6000f, 2000f),
+                listOf(4000f, 3000f),
+                listOf(5000f, 2000f),
+                listOf(5000f, 1000f)
             )
-            .padding(10.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+        )
+        LazyVerticalGrid(
+            modifier = Modifier
+                .heightIn(max = 700.dp)
+                .padding(vertical = 5.dp),
+            columns = GridCells.Fixed(3)
         ) {
-            Text(text = detail.itemName)
-            Text(text = "$${detail.price}")
+            categoryList.forEach {
+                item {
+                    Text(
+                        text = it.name,
+                        color = Color.White,
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { setSelectedCategory(it.name) }
+                            .background(
+                                if (it.name == selectedCategory) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                }
+                            )
+                            .padding(10.dp),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
-        detail.project.forEach {
+    }
+}
+
+@Composable
+fun DetailListAccounting(detailList: List<AccountingDetail>?) {
+    detailList?.forEach { detail ->
+        Column(
+            Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
+                .border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .padding(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = detail.itemName)
+                Text(text = "$${detail.price}")
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "${stringResource(id = R.string.project)} : ")
-                Text(
-                    text = it,
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(5.dp)
-                        )
-                        .padding(1.dp)
-                )
+                detail.projectList.forEachIndexed { index, project ->
+                    Text(
+                        text = project, modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(5.dp)
+                            )
+                            .padding(1.dp)
+                    )
+                    if (index < detail.projectList.size - 1) Text(text = "、")
+                }
             }
         }
     }
@@ -246,8 +240,7 @@ fun AddCategoryDialog(
 ) {
     var itemValue by remember { mutableStateOf("") }
 
-    AlertDialog(
-        onDismissRequest = { onCancel() },
+    AlertDialog(onDismissRequest = { onCancel() },
         title = { Text(text = stringResource(R.string.add_item)) },
         text = {
             Column(modifier = Modifier.padding(5.dp)) {
@@ -277,8 +270,7 @@ fun AddCategoryDialog(
             TextButton(onClick = { onCancel() }) {
                 Text(stringResource(R.string.cancel))
             }
-        }
-    )
+        })
 }
 
 // 增加固定項目的 dialog
@@ -291,8 +283,7 @@ fun AddItemDialog(
     var priceValue by remember { mutableStateOf("") }
     var projectValue by remember { mutableStateOf("") }
 
-    AlertDialog(
-        onDismissRequest = { onCancel() },
+    AlertDialog(onDismissRequest = { onCancel() },
         title = { Text(text = stringResource(R.string.add_item)) },
         text = {
             Column(modifier = Modifier.padding(5.dp)) {
@@ -353,8 +344,7 @@ fun AddItemDialog(
             TextButton(onClick = { onCancel() }) {
                 Text(stringResource(R.string.cancel))
             }
-        }
-    )
+        })
 }
 
 @Preview(showBackground = true)
@@ -362,5 +352,31 @@ fun AddItemDialog(
 fun GeneralAccountingPreview() {
     FullMoonMoneyTheme {
         GeneralAccounting()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CategoryAccountingPreview() {
+    FullMoonMoneyTheme {
+        CategoryListAccounting(
+            selectedCategory = "早餐", categoryList = listOf(
+                Category(name = "早餐"), Category(name = "午餐"), Category(name = "晚餐")
+            )
+        ) {}
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AccountingItemPreview() {
+    FullMoonMoneyTheme {
+        DetailListAccounting(
+            listOf(
+                AccountingDetail(
+                    itemName = "麥當勞", price = 120, projectList = mutableListOf("午餐", "晚餐")
+                )
+            )
+        )
     }
 }

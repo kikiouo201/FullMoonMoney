@@ -3,6 +3,11 @@ package com.example.fullmoonmoney.ui.generalAccounting
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.fullmoonmoney.Graph
+import com.example.fullmoonmoney.data.Category
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class GeneralAccountingViewModel : ViewModel() {
 
@@ -11,36 +16,50 @@ class GeneralAccountingViewModel : ViewModel() {
     var selectedDate = mutableStateOf(Pair(2023, 1))
     val selectedCategory = mutableStateOf("")
     var selectedTableData = mutableStateOf<GeneralAccountingItem?>(null)
-    val categoryList = mutableStateOf(listOf<String>())
+    var categoryList = mutableStateOf(listOf<Category>())
 
     init {
         // 測試資料
-        val list = mutableListOf<AccountingDetail>()
-        val project = mutableListOf("午餐")
-        val accountingDetail = AccountingDetail(
-            itemName = "麥當勞",
-            price = 120,
-            project = project
-        )
-        var total = 0
-        list.add(accountingDetail)
-        list.add(accountingDetail)
-        list.add(accountingDetail)
-        list.forEach {
-            total += it.price
+        val projectList = mutableListOf("午餐", "晚餐")
+        val list = (0..3).map {
+            AccountingDetail(
+                itemName = "麥當勞",
+                price = 120,
+                projectList = projectList
+            )
         }
-        categoryList.value = listOf("午餐", "晚餐", "早餐")
-        selectedCategory.value = categoryList.value[0]
-        allTableData[getSelectedDataKey()] = GeneralAccountingItem(total, list)
+        categoryList.value = projectList.map { Category(name = it) }
+        allTableData[getSelectedDataKey()] =
+            GeneralAccountingItem(list.sumOf { it.price }, (0..3).map {
+                AccountingDetail(
+                    itemName = "麥當勞",
+                    price = 120,
+                    projectList = projectList
+                )
+            }
+            )
         setSelectedCategory()
+
+        GlobalScope.launch(Dispatchers.IO) {
+            Graph.allCategoryDao.addCategory(Category(name = "早餐"))
+            Graph.allCategoryDao.addCategory(Category(name = "午餐"))
+            Graph.allCategoryDao.addCategory(Category(name = "晚餐"))
+            Graph.allCategoryDao.getAllCategory { allCategory ->
+                GlobalScope.launch(Dispatchers.Main) {
+                    categoryList.value = allCategory
+                    categoryList.value.getOrNull(0)?.let {
+                        selectedCategory.value = it.name
+                    }
+                }
+            }
+        }
     }
 
     fun setCurrentCategory(data: String) {
-        categoryList.value.let {
-            val detailList = mutableListOf<String>()
-            detailList.addAll(categoryList.value)
-            detailList.add(data)
-            categoryList.value = detailList
+        mutableListOf<Category>().let {
+            it.addAll(categoryList.value)
+            it.add(Category(name = data))
+            categoryList.value = it
         }
     }
 
@@ -94,11 +113,11 @@ class GeneralAccountingViewModel : ViewModel() {
 
 data class GeneralAccountingItem(
     var total: Int = 0,
-    var detailList: MutableList<AccountingDetail> = mutableListOf(),
+    var detailList: List<AccountingDetail> = listOf(),
 )
 
 data class AccountingDetail(
     var price: Int = 0,
     var itemName: String = "",
-    var project: MutableList<String> = mutableListOf(),
+    var projectList: MutableList<String> = mutableListOf(),
 )

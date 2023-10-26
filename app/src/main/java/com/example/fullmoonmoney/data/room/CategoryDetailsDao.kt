@@ -17,7 +17,7 @@ interface CategoryDetailsDao : BaseDao<CategoryDetails> {
     fun findByDetail(category: String, date: String): CategoryDetails
 
     @Delete
-    fun delete(searchHistory: CategoryDetails?): Int
+    fun delete(searchDetail: CategoryDetails?): Int
 
     @Query("DELETE FROM categoryDetails")
     fun clearTable(): Int
