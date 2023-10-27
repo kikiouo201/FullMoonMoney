@@ -14,112 +14,110 @@ import kotlinx.coroutines.withContext
 
 class MonthlyAccountingViewModel : ViewModel() {
 
-    private var allTableData = mutableStateOf(mutableStateMapOf<MonthlyCategory, MonthlyData>())
-    var currentMonthlyCategory = mutableStateOf(MonthlyCategory.Income)
+    private var allAssetData =
+        mutableStateOf(mutableStateMapOf<AssetCategory, AssetCategoryDetail>())
+    var currentCategory = mutableStateOf(AssetCategory.Income)
     var targetPrice = mutableStateOf(30000)
     var netWorth = mutableStateOf(0)
     var currentMoney = mutableStateOf(2000)
     var monthTargetPrice = mutableStateOf(5000)
-    var selectedDate = mutableStateOf(Pair(2023, 1))
-    var selectedTableData = mutableStateOf(listOf<Pair<String, String>>())
-    val monthlyCategories: List<MonthlyCategory> = listOf(
-        MonthlyCategory.Income,
-        MonthlyCategory.Invest,
-        MonthlyCategory.Expenditure,
-        MonthlyCategory.Debt
+    var selectedDate = mutableStateOf(Pair(2023, 1)) // 日期
+    var selectedAssetData = mutableStateOf(listOf<Pair<String, String>>()) // pair<項目,金額>
+    val categories: List<AssetCategory> = listOf(
+        AssetCategory.Income,
+        AssetCategory.Invest,
+        AssetCategory.Expenditure,
+        AssetCategory.Debt
     )
 
     init {
         // 測試資料
-        MonthlyData().let {
+        AssetCategoryDetail().let {
             it.data["2023/1"] = listOf(Pair("A 銀行", ""), Pair("B 銀行", ""), Pair("現金", ""))
             it.data["2023/9"] = listOf(Pair("B 銀行", ""), Pair("現金", ""))
-            it.fixedItem = mutableListOf("A 銀行", "B 銀行", "現金")
-            allTableData.value[MonthlyCategory.Income] = it
+            it.itemTitles = mutableListOf("A 銀行", "B 銀行", "現金")
+            allAssetData.value[AssetCategory.Income] = it
         }
         GlobalScope.launch(Dispatchers.IO) {
-            Graph.allCategoryDetailsDao.getDetails { monthlyCategory, monthlyDataKey, tableData ->
-                tableData?.let {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        initTableData(MonthlyCategory.valueOf(monthlyCategory), monthlyDataKey, it)
-                    }
+            Graph.allCategoryDetailsDao.getDetails { assetCategory, monthlyDataKey, assetData ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    initAssetData(AssetCategory.valueOf(assetCategory), monthlyDataKey, assetData)
                 }
             }
         }
     }
 
-    fun setCurrentStatus(monthlyCategory: MonthlyCategory, date: Pair<Int, Int>) {
-        currentMonthlyCategory.value = monthlyCategory
+    fun setCurrentStatus(assetCategory: AssetCategory, date: Pair<Int, Int>) {
+        currentCategory.value = assetCategory
         selectedDate.value = date
         setMonthlyData(false)
     }
 
-    private suspend fun initTableData(
-        monthlyCategory: MonthlyCategory,
+    private suspend fun initAssetData(
+        assetCategory: AssetCategory,
         monthlyDataKey: String,
         data: List<Pair<String, String>>,
     ) {
         withContext(Dispatchers.Main) {
-            if (!allTableData.value.containsKey(monthlyCategory)) {
+            if (!allAssetData.value.containsKey(assetCategory)) {
                 // 沒有 MonthlyCategory
-                MonthlyData().let { monthlyData ->
+                AssetCategoryDetail().let { monthlyData ->
                     val itemData = mutableListOf<Pair<String, String>>()
-                    monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
+                    monthlyData.itemTitles.forEach { itemData.add(Pair(it, "")) }
                     monthlyData.data[getMonthlyDateKey()] = itemData
-                    allTableData.value[monthlyCategory] = monthlyData
+                    allAssetData.value[assetCategory] = monthlyData
                 }
             }
 
-            allTableData.value[monthlyCategory]?.data?.set(monthlyDataKey, data)
+            allAssetData.value[assetCategory]?.data?.set(monthlyDataKey, data)
             setMonthlyData(false)
         }
     }
 
     fun setCurrentTableData(data: List<Pair<String, String>>) {
-        allTableData.value[currentMonthlyCategory.value]?.data?.set(getMonthlyDateKey(), data)
+        allAssetData.value[currentCategory.value]?.data?.set(getMonthlyDateKey(), data)
         setMonthlyData()
     }
 
     fun getTotal(): Int =
-        allTableData.value[currentMonthlyCategory.value]?.total?.get(getMonthlyDateKey()) ?: 0
+        allAssetData.value[currentCategory.value]?.total?.get(getMonthlyDateKey()) ?: 0
 
     fun setItemData(item: String) {
-        allTableData.value[currentMonthlyCategory.value]?.fixedItem?.add(item)
+        allAssetData.value[currentCategory.value]?.itemTitles?.add(item)
         setMonthlyData(false)
     }
 
     fun getItemData(): List<String> =
-        allTableData.value[currentMonthlyCategory.value]?.fixedItem ?: listOf()
+        allAssetData.value[currentCategory.value]?.itemTitles ?: listOf()
 
     private fun setMonthlyData(saveDatabase: Boolean = true) {
-        if (!allTableData.value.containsKey(currentMonthlyCategory.value)) {
-            // 沒有 MonthlyCategory
-            MonthlyData().let { monthlyData ->
-                val itemData = mutableListOf<Pair<String, String>>()
-                monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
-                monthlyData.data[getMonthlyDateKey()] = itemData
-                allTableData.value[currentMonthlyCategory.value] = monthlyData
-                if (saveDatabase) setMonthlyDao(currentMonthlyCategory.value, monthlyData)
+        if (!allAssetData.value.containsKey(currentCategory.value)) {
+            // 沒有選定類別的細項
+            AssetCategoryDetail().let { detail ->
+                detail.data[getMonthlyDateKey()] = detail.itemTitles.map { Pair(it, "") }
+                allAssetData.value[currentCategory.value] = detail
+                if (saveDatabase) setMonthlyDao(currentCategory.value, detail)
             }
         }
-        allTableData.value[currentMonthlyCategory.value]?.let { monthlyData ->
-            if (monthlyData.data[getMonthlyDateKey()].isNullOrEmpty()) {
-                // 沒有 MonthlyDataKey
-                val itemData = mutableListOf<Pair<String, String>>()
-                monthlyData.fixedItem.forEach { itemData.add(Pair(it, "")) }
-                monthlyData.data[getMonthlyDateKey()] = itemData
-                selectedTableData.value = itemData
+        allAssetData.value[currentCategory.value]?.let { detail ->
+            if (detail.data[getMonthlyDateKey()].isNullOrEmpty()) {
+                // 有選定類別, 沒有月份的細項
+                detail.itemTitles.map { Pair(it, "") }.let {
+                    detail.data[getMonthlyDateKey()] = it
+                    selectedAssetData.value = it
+                }
             } else {
-                monthlyData.data[getMonthlyDateKey()]?.let {
-                    selectedTableData.value = it
+                // 有選定類別, 有月份的細項
+                detail.data[getMonthlyDateKey()]?.let {
+                    selectedAssetData.value = it
                 }
             }
             setTotal()
             setNetWorth()
-            if (saveDatabase) setMonthlyDao(currentMonthlyCategory.value, monthlyData)
+            if (saveDatabase) setMonthlyDao(currentCategory.value, detail)
             return
         }
-        selectedTableData.value = listOf()
+        selectedAssetData.value = listOf()
         setTotal()
         setNetWorth()
     }
@@ -128,31 +126,26 @@ class MonthlyAccountingViewModel : ViewModel() {
 
     // 儲存總共
     private fun setTotal() {
-        var total = 0
-        selectedTableData.value.forEach {
-            if (it.second != "") {
-                total += it.second.toIntOrNull() ?: 0
-            }
-        }
-        allTableData.value[currentMonthlyCategory.value]?.total?.set(getMonthlyDateKey(), total)
+        allAssetData.value[currentCategory.value]?.total?.set(getMonthlyDateKey(),
+            selectedAssetData.value.sumOf { it.second.toIntOrNull() ?: 0 })
     }
 
     // 儲存淨值
     private fun setNetWorth() {
         netWorth.value = 0
-        allTableData.value.forEach { total ->
+        allAssetData.value.forEach { total ->
             total.value.total.forEach {
                 if (it.key == getMonthlyDateKey()) {
                     when (total.key) {
-                        MonthlyCategory.Income, MonthlyCategory.Invest -> netWorth.value += it.value
-                        MonthlyCategory.Debt, MonthlyCategory.Expenditure -> netWorth.value -= it.value
+                        AssetCategory.Income, AssetCategory.Invest -> netWorth.value += it.value
+                        AssetCategory.Debt, AssetCategory.Expenditure -> netWorth.value -= it.value
                     }
                 }
             }
         }
     }
 
-    private fun setMonthlyDao(monthlyCategory: MonthlyCategory, monthlyData: MonthlyData?) {
+    private fun setMonthlyDao(monthlyCategory: AssetCategory, monthlyData: AssetCategoryDetail?) {
         monthlyData?.let { tableData ->
             Graph.allCategoryDetailsDao.addDetails(
                 CategoryDetails(
@@ -170,13 +163,15 @@ class MonthlyAccountingViewModel : ViewModel() {
     }
 }
 
-data class MonthlyData(
-    var total: SnapshotStateMap<String, Int> = mutableStateMapOf(),
-    var data: SnapshotStateMap<String, List<Pair<String, String>>> = mutableStateMapOf(),
-    var fixedItem: MutableList<String> = mutableListOf(),
+// 資產類別明細
+data class AssetCategoryDetail(
+    var total: SnapshotStateMap<String, Int> = mutableStateMapOf(), // map<月份，類別總金額>
+    var data: SnapshotStateMap<String, List<Pair<String, String>>> = mutableStateMapOf(), // map<月份，pair<項目,金額>>
+    var itemTitles: MutableList<String> = mutableListOf(), // 類別項目們
 )
 
-enum class MonthlyCategory(
+// 資產類別
+enum class AssetCategory(
     val categoryName: Int,
 ) {
     Income(R.string.income),  // 收入

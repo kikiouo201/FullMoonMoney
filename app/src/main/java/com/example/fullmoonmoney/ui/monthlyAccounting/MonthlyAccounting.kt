@@ -54,7 +54,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
     val currentMoney by remember { viewModel.currentMoney }
     val monthTargetPrice by remember { viewModel.monthTargetPrice }
     val selectedDate by remember { viewModel.selectedDate }
-    val monthlyCategory by remember { viewModel.currentMonthlyCategory }
+    val monthlyCategory by remember { viewModel.currentCategory }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
 
     Column {
@@ -104,7 +104,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
-            viewModel.monthlyCategories.forEach {
+            viewModel.categories.forEach {
                 Text(text = stringResource(id = it.categoryName),
                     color = Color.White,
                     modifier = Modifier
@@ -149,7 +149,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 @Composable
 fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
     val titleData = listOf(R.string.item, R.string.amount)
-    val tableData by remember { viewModel.selectedTableData }
+    val tableData by remember { viewModel.selectedAssetData }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {

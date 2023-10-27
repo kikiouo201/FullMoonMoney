@@ -112,7 +112,9 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
             AddItemDialog(onAdd = { item, price, project ->
                 viewModel.setCurrentTableData(
                     AccountingDetail(
-                        itemName = item, price = price.toIntOrNull() ?: 0, projectList = project
+                        itemName = item,
+                        price = price.toIntOrNull() ?: 0,
+                        projectList = project
                     )
                 )
                 isAddFixedItemDialog = false

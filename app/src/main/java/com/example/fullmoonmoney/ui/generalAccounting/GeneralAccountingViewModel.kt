@@ -29,15 +29,7 @@ class GeneralAccountingViewModel : ViewModel() {
             )
         }
         categoryList.value = projectList.map { Category(name = it) }
-        allTableData[getSelectedDataKey()] =
-            GeneralAccountingItem(list.sumOf { it.price }, (0..3).map {
-                AccountingDetail(
-                    itemName = "麥當勞",
-                    price = 120,
-                    projectList = projectList
-                )
-            }
-            )
+        allTableData[getSelectedDataKey()] = GeneralAccountingItem(list.sumOf { it.price }, list)
         setSelectedCategory()
 
         GlobalScope.launch(Dispatchers.IO) {
@@ -73,15 +65,17 @@ class GeneralAccountingViewModel : ViewModel() {
     }
 
     fun setCurrentTableData(data: AccountingDetail) {
-        allTableData[getSelectedDataKey()]?.let {
-            val detailList = mutableListOf<AccountingDetail>()
-            detailList.addAll(it.detailList)
-            detailList.add(data)
-            val generalAccounting = GeneralAccountingItem(detailList = detailList)
-            generalAccounting.total = setTotal(generalAccounting)
-            allTableData[getSelectedDataKey()] = generalAccounting
-            selectedTableData.value = generalAccounting
-            selectedTotal.value = generalAccounting.total
+        allTableData[getSelectedDataKey()]?.let { item ->
+            val detailList = mutableListOf<AccountingDetail>().apply {
+                addAll(item.detailList)
+                add(data)
+            }
+            GeneralAccountingItem(detailList = detailList).let {
+                it.total = setTotal(it)
+                allTableData[getSelectedDataKey()] = it
+                selectedTableData.value = it
+                selectedTotal.value = it.total
+            }
         }
     }
 

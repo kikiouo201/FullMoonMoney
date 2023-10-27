@@ -17,14 +17,16 @@ class AllCategoryDetails(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    fun getDetails(initDetails: (String, String, List<Pair<String, String>>?) -> Unit) {
+    fun getDetails(initDetails: (String, String, List<Pair<String, String>>) -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
-            categoryDetailsDao.getAll().forEach {
-                initDetails(
-                    it.category,
-                    it.date,
-                    it.details?.map { map -> Pair(map.key, map.value) }
-                )
+            categoryDetailsDao.getAll().forEach { allDetail ->
+                allDetail.details?.map { map -> Pair(map.key, map.value) }?.let {
+                    initDetails(
+                        allDetail.category,
+                        allDetail.date,
+                        it
+                    )
+                }
             }
         }
     }
