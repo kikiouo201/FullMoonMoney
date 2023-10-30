@@ -53,7 +53,7 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
     val selectedDate by remember { viewModel.selectedDate }
     val selectedCategory by remember { viewModel.selectedCategory }
-    val tableData by remember { viewModel.selectedTableData }
+    val selectedItem by remember { viewModel.selectedItem }
     val categoryList by remember { mutableStateOf(viewModel.categoryList) }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
     var isCategory by remember { mutableStateOf(false) }
@@ -99,9 +99,8 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
             CategoryListAccounting(selectedCategory, categoryList.value) {
                 viewModel.setSelectedCategory(it)
             }
-        } else {
-            DetailListAccounting(tableData?.detailList)
         }
+        DetailListAccounting(selectedItem?.detailList)
 
         if (isAddFixedItemDialog && isCategory) {
             AddCategoryDialog(onAdd = { item ->
@@ -362,8 +361,11 @@ fun GeneralAccountingPreview() {
 fun CategoryAccountingPreview() {
     FullMoonMoneyTheme {
         CategoryListAccounting(
-            selectedCategory = "早餐", categoryList = listOf(
-                Category(name = "早餐"), Category(name = "午餐"), Category(name = "晚餐")
+            selectedCategory = "早餐",
+            categoryList = listOf(
+                Category(name = "早餐"),
+                Category(name = "午餐"),
+                Category(name = "晚餐")
             )
         ) {}
     }

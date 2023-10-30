@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 
 class GeneralAccountingViewModel : ViewModel() {
 
-    private var allTableData = mutableStateMapOf<String, GeneralAccountingItem>()
+    private var allItem = mutableStateMapOf<String, AccountingItem>()
     private var selectedTotal = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
     val selectedCategory = mutableStateOf("")
-    var selectedTableData = mutableStateOf<GeneralAccountingItem?>(null)
+    var selectedItem = mutableStateOf<AccountingItem?>(null)
     var categoryList = mutableStateOf(listOf<Category>())
 
     init {
@@ -29,7 +29,7 @@ class GeneralAccountingViewModel : ViewModel() {
             )
         }
         categoryList.value = projectList.map { Category(name = it) }
-        allTableData[getSelectedDataKey()] = GeneralAccountingItem(list.sumOf { it.price }, list)
+        allItem[getSelectedDataKey()] = AccountingItem(list.sumOf { it.price }, list)
         setSelectedCategory()
 
         GlobalScope.launch(Dispatchers.IO) {
@@ -65,23 +65,23 @@ class GeneralAccountingViewModel : ViewModel() {
     }
 
     fun setCurrentTableData(data: AccountingDetail) {
-        allTableData[getSelectedDataKey()]?.let { item ->
+        allItem[getSelectedDataKey()]?.let { item ->
             val detailList = mutableListOf<AccountingDetail>().apply {
                 addAll(item.detailList)
                 add(data)
             }
-            GeneralAccountingItem(detailList = detailList).let {
+            AccountingItem(detailList = detailList).let {
                 it.total = setTotal(it)
-                allTableData[getSelectedDataKey()] = it
-                selectedTableData.value = it
+                allItem[getSelectedDataKey()] = it
+                selectedItem.value = it
                 selectedTotal.value = it.total
             }
         }
     }
 
-    fun getTotal(): Int = selectedTableData.value?.total ?: 0
+    fun getTotal(): Int = selectedItem.value?.total ?: 0
 
-    private fun setTotal(generalAccounting: GeneralAccountingItem): Int {
+    private fun setTotal(generalAccounting: AccountingItem): Int {
         var total = 0
         generalAccounting.detailList.forEach {
             total += it.price
@@ -92,24 +92,26 @@ class GeneralAccountingViewModel : ViewModel() {
     private fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
 
     private fun setSelectedCategory() {
-        if (allTableData[getSelectedDataKey()] == null) {
-            allTableData[getSelectedDataKey()] = GeneralAccountingItem()
-            selectedTableData.value = GeneralAccountingItem()
+        if (allItem[getSelectedDataKey()] == null) {
+            allItem[getSelectedDataKey()] = AccountingItem()
+            selectedItem.value = AccountingItem()
             selectedTotal.value = 0
         } else {
-            allTableData[getSelectedDataKey()]?.let {
-                selectedTableData.value = it
+            allItem[getSelectedDataKey()]?.let {
+                selectedItem.value = it
                 selectedTotal.value = it.total
             }
         }
     }
 }
 
-data class GeneralAccountingItem(
+// 記帳項目
+data class AccountingItem(
     var total: Int = 0,
     var detailList: List<AccountingDetail> = listOf(),
 )
 
+// 記帳明細
 data class AccountingDetail(
     var price: Int = 0,
     var itemName: String = "",
