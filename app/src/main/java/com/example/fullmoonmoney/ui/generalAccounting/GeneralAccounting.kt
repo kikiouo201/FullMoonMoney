@@ -95,8 +95,8 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
                 )
             }
         }
-        if (isCategory) {
-            CategoryListAccounting(selectedCategory, categoryList.value) {
+        if (isCategory && selectedCategory != null) {
+            CategoryListAccounting(selectedCategory!!, categoryList.value) {
                 viewModel.setSelectedCategory(it)
             }
         }
@@ -124,13 +124,13 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
 
 @Composable
 fun CategoryListAccounting(
-    selectedCategory: String,
+    selectedCategory: Category,
     categoryList: List<Category>,
-    setSelectedCategory: (String) -> Unit,
+    setSelectedCategory: (Category) -> Unit,
 ) {
     Column(Modifier.padding(5.dp)) {
         Text(
-            text = selectedCategory,
+            text = selectedCategory.name,
             color = Color.White,
             modifier = Modifier
                 .padding(5.dp)
@@ -176,9 +176,9 @@ fun CategoryListAccounting(
                         modifier = Modifier
                             .padding(5.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable { setSelectedCategory(it.name) }
+                            .clickable { setSelectedCategory(it) }
                             .background(
-                                if (it.name == selectedCategory) {
+                                if (it == selectedCategory) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.primaryContainer
@@ -361,7 +361,7 @@ fun GeneralAccountingPreview() {
 fun CategoryAccountingPreview() {
     FullMoonMoneyTheme {
         CategoryListAccounting(
-            selectedCategory = "早餐",
+            selectedCategory = Category(name = "早餐"),
             categoryList = listOf(
                 Category(name = "早餐"),
                 Category(name = "午餐"),

@@ -6,7 +6,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import com.example.fullmoonmoney.Graph
 import com.example.fullmoonmoney.R
-import com.example.fullmoonmoney.data.CategoryDetails
+import com.example.fullmoonmoney.data.AssetDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -24,10 +24,7 @@ class MonthlyAccountingViewModel : ViewModel() {
     var selectedDate = mutableStateOf(Pair(2023, 1)) // 日期
     var selectedAssetData = mutableStateOf(listOf<Pair<String, String>>()) // pair<項目,金額>
     val categories: List<AssetCategory> = listOf(
-        AssetCategory.Income,
-        AssetCategory.Invest,
-        AssetCategory.Expenditure,
-        AssetCategory.Debt
+        AssetCategory.Income, AssetCategory.Invest, AssetCategory.Expenditure, AssetCategory.Debt
     )
 
     init {
@@ -38,13 +35,7 @@ class MonthlyAccountingViewModel : ViewModel() {
             it.itemTitles = mutableListOf("A 銀行", "B 銀行", "現金")
             allAssetData.value[AssetCategory.Income] = it
         }
-        GlobalScope.launch(Dispatchers.IO) {
-            Graph.allCategoryDetailsDao.getDetails { assetCategory, monthlyDataKey, assetData ->
-                GlobalScope.launch(Dispatchers.IO) {
-                    initAssetData(AssetCategory.valueOf(assetCategory), monthlyDataKey, assetData)
-                }
-            }
-        }
+        getAssetData(currentCategory.value, getSelectedDataKey())
     }
 
     fun setCurrentStatus(assetCategory: AssetCategory, date: Pair<Int, Int>) {
@@ -64,7 +55,7 @@ class MonthlyAccountingViewModel : ViewModel() {
                 AssetCategoryDetail().let { monthlyData ->
                     val itemData = mutableListOf<Pair<String, String>>()
                     monthlyData.itemTitles.forEach { itemData.add(Pair(it, "")) }
-                    monthlyData.data[getMonthlyDateKey()] = itemData
+                    monthlyData.data[getSelectedDataKey()] = itemData
                     allAssetData.value[assetCategory] = monthlyData
                 }
             }
@@ -75,12 +66,12 @@ class MonthlyAccountingViewModel : ViewModel() {
     }
 
     fun setCurrentTableData(data: List<Pair<String, String>>) {
-        allAssetData.value[currentCategory.value]?.data?.set(getMonthlyDateKey(), data)
+        allAssetData.value[currentCategory.value]?.data?.set(getSelectedDataKey(), data)
         setMonthlyData()
     }
 
     fun getTotal(): Int =
-        allAssetData.value[currentCategory.value]?.total?.get(getMonthlyDateKey()) ?: 0
+        allAssetData.value[currentCategory.value]?.total?.get(getSelectedDataKey()) ?: 0
 
     fun setItemData(item: String) {
         allAssetData.value[currentCategory.value]?.itemTitles?.add(item)
@@ -94,21 +85,23 @@ class MonthlyAccountingViewModel : ViewModel() {
         if (!allAssetData.value.containsKey(currentCategory.value)) {
             // 沒有選定類別的細項
             AssetCategoryDetail().let { detail ->
-                detail.data[getMonthlyDateKey()] = detail.itemTitles.map { Pair(it, "") }
+                detail.data[getSelectedDataKey()] = detail.itemTitles.map { Pair(it, "") }
                 allAssetData.value[currentCategory.value] = detail
                 if (saveDatabase) setMonthlyDao(currentCategory.value, detail)
             }
         }
         allAssetData.value[currentCategory.value]?.let { detail ->
-            if (detail.data[getMonthlyDateKey()].isNullOrEmpty()) {
+            if (detail.data[getSelectedDataKey()].isNullOrEmpty()) {
                 // 有選定類別, 沒有月份的細項
                 detail.itemTitles.map { Pair(it, "") }.let {
-                    detail.data[getMonthlyDateKey()] = it
+                    detail.data[getSelectedDataKey()] = it
+                    if (saveDatabase) getAssetData(currentCategory.value, getSelectedDataKey())
                     selectedAssetData.value = it
                 }
             } else {
                 // 有選定類別, 有月份的細項
-                detail.data[getMonthlyDateKey()]?.let {
+                detail.data[getSelectedDataKey()]?.let {
+                    if (saveDatabase) getAssetData(currentCategory.value, getSelectedDataKey())
                     selectedAssetData.value = it
                 }
             }
@@ -117,16 +110,34 @@ class MonthlyAccountingViewModel : ViewModel() {
             if (saveDatabase) setMonthlyDao(currentCategory.value, detail)
             return
         }
+        if (saveDatabase) getAssetData(currentCategory.value, getSelectedDataKey())
         selectedAssetData.value = listOf()
         setTotal()
         setNetWorth()
     }
 
-    private fun getMonthlyDateKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
+    private fun getAssetData(category: AssetCategory, date: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            Graph.allAssetDetailsDao.getAssetDetail(
+                category,
+                date
+            ) { assetCategory, date, details ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    if (AssetCategory.values().any { it.name == assetCategory.name }) {
+                        initAssetData(
+                            AssetCategory.valueOf(assetCategory.name), date, details
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
 
     // 儲存總共
     private fun setTotal() {
-        allAssetData.value[currentCategory.value]?.total?.set(getMonthlyDateKey(),
+        allAssetData.value[currentCategory.value]?.total?.set(getSelectedDataKey(),
             selectedAssetData.value.sumOf { it.second.toIntOrNull() ?: 0 })
     }
 
@@ -135,7 +146,7 @@ class MonthlyAccountingViewModel : ViewModel() {
         netWorth.value = 0
         allAssetData.value.forEach { total ->
             total.value.total.forEach {
-                if (it.key == getMonthlyDateKey()) {
+                if (it.key == getSelectedDataKey()) {
                     when (total.key) {
                         AssetCategory.Income, AssetCategory.Invest -> netWorth.value += it.value
                         AssetCategory.Debt, AssetCategory.Expenditure -> netWorth.value -= it.value
@@ -145,18 +156,14 @@ class MonthlyAccountingViewModel : ViewModel() {
         }
     }
 
-    private fun setMonthlyDao(monthlyCategory: AssetCategory, monthlyData: AssetCategoryDetail?) {
-        monthlyData?.let { tableData ->
-            Graph.allCategoryDetailsDao.addDetails(
-                CategoryDetails(
+    private fun setMonthlyDao(monthlyCategory: AssetCategory, monthlyData: AssetCategoryDetail) {
+        monthlyData.data[getSelectedDataKey()]?.forEach {
+            Graph.allAssetDetailsDao.addAssetDetail(
+                AssetDetail(
                     category = monthlyCategory.name,
-                    date = getMonthlyDateKey(),
-                    details = mutableStateMapOf<String, String>().apply {
-                        tableData.data[getMonthlyDateKey()]?.forEach {
-                            this[it.first] = it.second
-                        }
-                    }.toMap(),
-                    project = "",
+                    date = getSelectedDataKey(),
+                    item = it.first,
+                    amount = it.second,
                 )
             )
         }

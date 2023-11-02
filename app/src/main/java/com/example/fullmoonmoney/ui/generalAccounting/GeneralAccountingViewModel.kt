@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.fullmoonmoney.Graph
 import com.example.fullmoonmoney.data.Category
+import com.example.fullmoonmoney.data.CategoryDetails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,33 +15,47 @@ class GeneralAccountingViewModel : ViewModel() {
     private var allItem = mutableStateMapOf<String, AccountingItem>()
     private var selectedTotal = mutableStateOf(0)
     var selectedDate = mutableStateOf(Pair(2023, 1))
-    val selectedCategory = mutableStateOf("")
+    val selectedCategory = mutableStateOf<Category?>(null)
     var selectedItem = mutableStateOf<AccountingItem?>(null)
     var categoryList = mutableStateOf(listOf<Category>())
 
     init {
         // 測試資料
+        val categoryNameList = mutableListOf(
+            "早餐",
+            "午餐",
+            "晚餐",
+            "早餐1",
+            "午餐1",
+            "晚餐1",
+            "早餐2",
+            "午餐2",
+            "晚餐2"
+        )
         val projectList = mutableListOf("午餐", "晚餐")
         val list = (0..3).map {
             AccountingDetail(
-                itemName = "麥當勞",
+                itemName = "麥當勞$it",
                 price = 120,
                 projectList = projectList
             )
         }
         categoryList.value = projectList.map { Category(name = it) }
+        selectedCategory.value = categoryList.value.first()
         allItem[getSelectedDataKey()] = AccountingItem(list.sumOf { it.price }, list)
         setSelectedCategory()
 
         GlobalScope.launch(Dispatchers.IO) {
-            Graph.allCategoryDao.addCategory(Category(name = "早餐"))
-            Graph.allCategoryDao.addCategory(Category(name = "午餐"))
-            Graph.allCategoryDao.addCategory(Category(name = "晚餐"))
+            list.forEachIndexed { index, accountingDetail ->
+                setAccountingDetailDao(Category(name = categoryNameList[index]), accountingDetail)
+            }
             Graph.allCategoryDao.getAllCategory { allCategory ->
                 GlobalScope.launch(Dispatchers.Main) {
-                    categoryList.value = allCategory
-                    categoryList.value.getOrNull(0)?.let {
-                        selectedCategory.value = it.name
+                    if (allCategory.isNotEmpty()) {
+                        categoryList.value = allCategory
+                        categoryList.value.getOrNull(0)?.let {
+                            setSelectedCategory(it)
+                        }
                     }
                 }
             }
@@ -55,8 +70,18 @@ class GeneralAccountingViewModel : ViewModel() {
         }
     }
 
-    fun setSelectedCategory(data: String) {
-        selectedCategory.value = data
+    fun setSelectedCategory(category: Category) {
+        selectedCategory.value = category
+        GlobalScope.launch(Dispatchers.IO) {
+            Graph.allCategoryDetailsDao.getDetails { assetCategory, assetData ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    initDetails(
+                        Category(name = assetCategory),
+                        assetData
+                    )
+                }
+            }
+        }
     }
 
     fun setCurrentStatus(date: Pair<Int, Int>) {
@@ -66,6 +91,7 @@ class GeneralAccountingViewModel : ViewModel() {
 
     fun setCurrentTableData(data: AccountingDetail) {
         allItem[getSelectedDataKey()]?.let { item ->
+            if (item.detailList.isEmpty()) return
             val detailList = mutableListOf<AccountingDetail>().apply {
                 addAll(item.detailList)
                 add(data)
@@ -76,6 +102,19 @@ class GeneralAccountingViewModel : ViewModel() {
                 selectedItem.value = it
                 selectedTotal.value = it.total
             }
+        }
+    }
+
+    private fun setAccountingDetailDao(category: Category, accountingDetail: AccountingDetail) {
+        accountingDetail.let { tableData ->
+            Graph.allCategoryDetailsDao.addDetails(
+                CategoryDetails(
+                    category = category.name,
+                    date = "2023/1",
+                    details = mapOf(Pair(tableData.itemName, tableData.price.toString())),
+                    project = tableData.projectList.first(),
+                )
+            )
         }
     }
 
@@ -102,6 +141,24 @@ class GeneralAccountingViewModel : ViewModel() {
                 selectedTotal.value = it.total
             }
         }
+    }
+
+    private fun initDetails(
+        assetCategory: Category,
+        data: List<Pair<String, String>>,
+    ) {
+        val detailList = mutableListOf<AccountingDetail>()
+        val accountingDetail = AccountingDetail()
+        accountingDetail.let { detail ->
+            data.forEach {
+                detail.itemName = it.first
+                detail.price = it.second.toIntOrNull() ?: 0
+                detail.projectList = mutableListOf(assetCategory.name)
+            }
+        }
+        detailList.add(accountingDetail)
+        if (detailList.isEmpty()) return
+        setCurrentTableData(accountingDetail)
     }
 }
 

@@ -13,8 +13,8 @@ interface CategoryDetailsDao : BaseDao<CategoryDetails> {
     @Query("SELECT * FROM categoryDetails WHERE id IN (:ids)")
     fun loadAllByIds(ids: IntArray): List<CategoryDetails>
 
-    @Query("SELECT * FROM categoryDetails WHERE category LIKE :category AND date LIKE :date LIMIT 1")
-    fun findByDetail(category: String, date: String): CategoryDetails
+    @Query("SELECT * FROM categoryDetails WHERE category LIKE :category")
+    fun findByDetails(category: String): List<CategoryDetails>
 
     @Delete
     fun delete(searchDetail: CategoryDetails?): Int

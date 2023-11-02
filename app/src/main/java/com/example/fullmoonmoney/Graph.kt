@@ -2,6 +2,7 @@ package com.example.fullmoonmoney
 
 import android.content.Context
 import androidx.room.Room
+import com.example.fullmoonmoney.data.AllAssetDetails
 import com.example.fullmoonmoney.data.AllCategory
 import com.example.fullmoonmoney.data.AllCategoryDetails
 import com.example.fullmoonmoney.data.database.AppDatabase
@@ -9,6 +10,12 @@ import com.example.fullmoonmoney.data.database.AppDatabase
 object Graph {
 
     private lateinit var database: AppDatabase
+
+    val allAssetDetailsDao by lazy {
+        AllAssetDetails(
+            assetDetailsDao = database.assetDetailsDao()
+        )
+    }
 
     val allCategoryDetailsDao by lazy {
         AllCategoryDetails(
