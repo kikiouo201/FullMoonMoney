@@ -35,10 +35,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
-import com.example.fullmoonmoney.ui.custom.ProgressIndicator
 import com.example.fullmoonmoney.ui.custom.MonthlyAccountingBarChart
+import com.example.fullmoonmoney.ui.custom.ProgressIndicator
 import com.example.fullmoonmoney.ui.custom.TableContentCell
 import com.example.fullmoonmoney.ui.custom.TableHeaderCell
 import com.example.fullmoonmoney.ui.custom.getProgress
@@ -49,12 +50,12 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 // 月記帳
 @Composable
 fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
-    val netWorth by remember { viewModel.netWorth }
+
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
+    val selectedCategory = viewState.assetCategory
     val targetPrice by remember { viewModel.targetPrice }
     val currentMoney by remember { viewModel.currentMoney }
     val monthTargetPrice by remember { viewModel.monthTargetPrice }
-    val selectedDate by remember { viewModel.selectedDate }
-    val monthlyCategory by remember { viewModel.currentCategory }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
 
     Column {
@@ -65,20 +66,20 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = "淨值 : ${formatCurrency(netWorth)}")
-            MonthDropdownMenu(selectedDate) {
-                viewModel.setCurrentStatus(monthlyCategory, it)
+            Text(text = "淨值 : ${formatCurrency(viewState.netWorth)}")
+            MonthDropdownMenu(viewState.date) {
+                viewModel.setCurrentDate(viewState.date)
             }
         }
         ProgressIndicator(
             progressTitle = "淨值 :",
             targetTitle = ": 目標",
-            progressText = formatCurrency(netWorth),
+            progressText = formatCurrency(viewState.netWorth),
             targetText = formatCurrency(targetPrice),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            progress = getProgress(netWorth, targetPrice)
+            progress = getProgress(viewState.netWorth, targetPrice)
         )
         ProgressIndicator(
             progressTitle = "目前 :",
@@ -109,9 +110,9 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                     color = Color.White,
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable { viewModel.setCurrentStatus(it, selectedDate) }
+                        .clickable { viewModel.setCurrentCategory(it) }
                         .background(
-                            if (it == monthlyCategory) {
+                            if (it == selectedCategory) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.primaryContainer
@@ -148,8 +149,8 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 
 @Composable
 fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
     val titleData = listOf(R.string.item, R.string.amount)
-    val tableData by remember { viewModel.selectedAssetData }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
@@ -174,20 +175,14 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
                     .padding(10.dp)
             )
         }
-        tableData.forEachIndexed { index, data ->
-            var mData = remember { mutableStateOf(data) }
-            mData.value = data
+        viewState.detailList.forEach { detail ->
+            // todo 待調整
             Row(Modifier.fillMaxWidth()) {
                 TableContentCell(
-                    text = mData.value.first,
-                    textFieldText = mData.value.second
-                ) { str ->
-                    mData.value = Pair(mData.value.first, str)
-                    mutableListOf<Pair<String, String>>().let {
-                        it.addAll(tableData)
-                        it[index] = Pair(tableData[index].first, str)
-                        viewModel.setCurrentTableData(data = it)
-                    }
+                    text = detail.item,
+                    textFieldText = detail.amount
+                ) {
+                    viewModel.setAssetDetail(detail, it)
                 }
             }
         }
@@ -201,11 +196,7 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
             AddItemDialog(
                 onAdd = { text ->
                     if (text.isEmpty()) return@AddItemDialog
-                    mutableListOf<Pair<String, String>>().let { list ->
-                        list.addAll(tableData)
-                        list.add(Pair(text, ""))
-                        viewModel.setCurrentTableData(data = list)
-                    }
+                    viewModel.setAssetDetail(text, "")
                     isAddItemDialog = false
                 },
                 onCancel = { isAddItemDialog = false }
