@@ -11,6 +11,10 @@ class AllAssetDetails(
         assetDetailsDao.insert(assetDetail)
     }
 
+    suspend fun addAssetDetailList(assetDetailList: List<AssetDetail>) {
+        assetDetailsDao.insertAll(assetDetailList)
+    }
+
     fun getAssetDetail(category: AssetCategory, date: String): Flow<List<AssetDetail>> {
         return assetDetailsDao.findByDetails(category.name, date)
     }

@@ -79,12 +79,9 @@ class MonthlyAccountingViewModel(
     private fun getSelectedDataKey() = "${_selectedDate.value.first}/${_selectedDate.value.second}"
 
     // 存資產明細
-    fun setAssetDetail(assetDetail: AssetDetail, amount: String) {
+    fun setAssetDetailList(assetDetailList: List<AssetDetail>) {
         viewModelScope.launch {
-            assetDetail.amount = amount
-            allAssetDetailsDao.addAssetDetail(
-                assetDetail
-            )
+            allAssetDetailsDao.addAssetDetailList(assetDetailList)
         }
     }
 

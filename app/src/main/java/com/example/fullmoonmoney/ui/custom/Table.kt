@@ -43,6 +43,7 @@ fun TableHeaderCell(
 fun TableContentCell(
     text: String,
     textFieldText: String,
+    isEdit: Boolean = false,
     onChangeText: (String) -> Unit,
 ) {
     Row(
@@ -55,15 +56,22 @@ fun TableContentCell(
                 .weight(1f)
                 .padding(10.dp)
         )
-        OutlinedTextField(
-            value = textFieldText,
-            onValueChange = {
-                onChangeText(it)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .padding(5.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
+        if (isEdit) {
+            OutlinedTextField(
+                value = textFieldText,
+                onValueChange = { onChangeText(it) },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(5.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+        } else {
+            Text(
+                text = textFieldText,
+                Modifier
+                    .weight(1f)
+                    .padding(10.dp)
+            )
+        }
     }
 }

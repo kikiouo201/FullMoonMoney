@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.data.AssetDetail
 import com.example.fullmoonmoney.ui.custom.MonthlyAccountingBarChart
 import com.example.fullmoonmoney.ui.custom.ProgressIndicator
 import com.example.fullmoonmoney.ui.custom.TableContentCell
@@ -52,10 +55,12 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+    val detailList = viewState.detailList.toMutableList()
     val selectedCategory = viewState.assetCategory
     val targetPrice by remember { viewModel.targetPrice }
     val currentMoney by remember { viewModel.currentMoney }
     val monthTargetPrice by remember { viewModel.monthTargetPrice }
+    var isEditContent by remember { mutableStateOf(false) }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
 
     Column {
@@ -93,7 +98,6 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             progressColor = colorResource(R.color.teal_700),
             backgroundColor = colorResource(R.color.orange_200),
         )
-
         MonthlyAccountingBarChart(
             Modifier.height(100.dp),
             MaterialTheme.colorScheme.onPrimary
@@ -126,14 +130,34 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
+            IconButton(onClick = {
+                if (isEditContent) viewModel.setAssetDetailList(detailList)
+                isEditContent = !isEditContent
+            }) {
+                if (isEditContent)
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = "Done"
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit"
+                    )
+            }
             IconButton(onClick = { isAddFixedItemDialog = true }) {
                 Icon(
-                    imageVector = Icons.Filled.Create,
-                    contentDescription = "create"
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add"
                 )
             }
         }
-        MonthlyAccountingTable(viewModel)
+        MonthlyAccountingTable(
+            total = viewModel.getTotal().toString(),
+            detailList = viewState.detailList,
+            isEditContent = isEditContent,
+            setAssetDetailItem = { viewModel.setAssetDetail(it, "") }
+        ) { index, amount -> detailList[index].amount = amount }
         if (isAddFixedItemDialog) {
             AddFixedItemDialog(
                 itemData = viewModel.getItemData(),
@@ -148,9 +172,15 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 }
 
 @Composable
-fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
-    val viewState by viewModel.state.collectAsStateWithLifecycle()
+fun MonthlyAccountingTable(
+    total: String,
+    detailList: List<AssetDetail>,
+    isEditContent: Boolean,
+    setAssetDetailItem: (String) -> Unit,
+    setAssetDetail: (Int, String) -> Unit,
+) {
     val titleData = listOf(R.string.item, R.string.amount)
+    var amount by remember { mutableStateOf("") }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
@@ -169,20 +199,22 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
                     .padding(10.dp)
             )
             Text(
-                text = viewModel.getTotal().toString(),
+                text = total,
                 Modifier
                     .weight(1f)
                     .padding(10.dp)
             )
         }
-        viewState.detailList.forEach { detail ->
-            // todo 待調整
+        detailList.forEachIndexed { index, detail ->
+            amount = detail.amount
             Row(Modifier.fillMaxWidth()) {
                 TableContentCell(
                     text = detail.item,
-                    textFieldText = detail.amount
+                    textFieldText = amount,
+                    isEdit = isEditContent
                 ) {
-                    viewModel.setAssetDetail(detail, it)
+                    amount = it
+                    setAssetDetail(index, it)
                 }
             }
         }
@@ -196,7 +228,7 @@ fun MonthlyAccountingTable(viewModel: MonthlyAccountingViewModel) {
             AddItemDialog(
                 onAdd = { text ->
                     if (text.isEmpty()) return@AddItemDialog
-                    viewModel.setAssetDetail(text, "")
+                    setAssetDetailItem(text)
                     isAddItemDialog = false
                 },
                 onCancel = { isAddItemDialog = false }
