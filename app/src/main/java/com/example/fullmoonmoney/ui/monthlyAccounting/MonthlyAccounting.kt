@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,11 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
-import com.example.fullmoonmoney.data.AssetDetail
 import com.example.fullmoonmoney.ui.custom.MonthlyAccountingBarChart
 import com.example.fullmoonmoney.ui.custom.ProgressIndicator
-import com.example.fullmoonmoney.ui.custom.TableContentCell
-import com.example.fullmoonmoney.ui.custom.TableHeaderCell
 import com.example.fullmoonmoney.ui.custom.getProgress
 import com.example.fullmoonmoney.ui.dataFormat.formatCurrency
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
@@ -73,7 +68,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
         ) {
             Text(text = "淨值 : ${formatCurrency(viewState.netWorth)}")
             MonthDropdownMenu(viewState.date) {
-                viewModel.setCurrentDate(viewState.date)
+                viewModel.setSelectedDate(viewState.date)
             }
         }
         ProgressIndicator(
@@ -114,7 +109,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                     color = Color.White,
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable { viewModel.setCurrentCategory(it) }
+                        .clickable { viewModel.setSelectedCategory(it) }
                         .background(
                             if (it == selectedCategory) {
                                 MaterialTheme.colorScheme.primary
@@ -157,7 +152,9 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             detailList = viewState.detailList,
             isEditContent = isEditContent,
             setAssetDetailItem = { viewModel.setAssetDetail(it, "") }
-        ) { index, amount -> detailList[index].amount = amount }
+        ) { index, amount ->
+            detailList[index].amount = amount
+        }
         if (isAddFixedItemDialog) {
             AddFixedItemDialog(
                 itemData = viewModel.getItemData(),
@@ -169,106 +166,6 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             )
         }
     }
-}
-
-@Composable
-fun MonthlyAccountingTable(
-    total: String,
-    detailList: List<AssetDetail>,
-    isEditContent: Boolean,
-    setAssetDetailItem: (String) -> Unit,
-    setAssetDetail: (Int, String) -> Unit,
-) {
-    val titleData = listOf(R.string.item, R.string.amount)
-    var amount by remember { mutableStateOf("") }
-    var isAddItemDialog by remember { mutableStateOf(false) }
-
-    Column(Modifier.fillMaxSize()) {
-        TableHeaderCell(
-            textList = titleData,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Row(
-            modifier = Modifier.padding(5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "總共 : ",
-                Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-            )
-            Text(
-                text = total,
-                Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-            )
-        }
-        detailList.forEachIndexed { index, detail ->
-            amount = detail.amount
-            Row(Modifier.fillMaxWidth()) {
-                TableContentCell(
-                    text = detail.item,
-                    textFieldText = amount,
-                    isEdit = isEditContent
-                ) {
-                    amount = it
-                    setAssetDetail(index, it)
-                }
-            }
-        }
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = { isAddItemDialog = true }
-        ) {
-            Text(text = "+")
-        }
-        if (isAddItemDialog) {
-            AddItemDialog(
-                onAdd = { text ->
-                    if (text.isEmpty()) return@AddItemDialog
-                    setAssetDetailItem(text)
-                    isAddItemDialog = false
-                },
-                onCancel = { isAddItemDialog = false }
-            )
-        }
-    }
-}
-
-// 增加項目的 dialog
-@Composable
-fun AddItemDialog(onAdd: (String) -> Unit, onCancel: () -> Unit) {
-    var value by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = { onCancel() },
-        title = { Text(text = stringResource(R.string.add_item)) },
-        text = {
-            Row(
-                modifier = Modifier.padding(5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "${stringResource(R.string.item)} : ")
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onAdd(value) }) {
-                Text(stringResource(R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { onCancel() }) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
 }
 
 // 增加固定項目的 dialog

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.fullmoonmoney.Graph
 import com.example.fullmoonmoney.data.Category
-import com.example.fullmoonmoney.data.CategoryDetails
+import com.example.fullmoonmoney.data.CategoryDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ class GeneralAccountingViewModel : ViewModel() {
     fun setSelectedCategory(category: Category) {
         selectedCategory.value = category
         GlobalScope.launch(Dispatchers.IO) {
-            Graph.allCategoryDetailsDao.getDetails { assetCategory, assetData ->
+            Graph.allCategoryDetailDao.getDetailList { assetCategory, assetData ->
                 GlobalScope.launch(Dispatchers.IO) {
                     initDetails(
                         Category(name = assetCategory),
@@ -107,11 +107,11 @@ class GeneralAccountingViewModel : ViewModel() {
 
     private fun setAccountingDetailDao(category: Category, accountingDetail: AccountingDetail) {
         accountingDetail.let { tableData ->
-            Graph.allCategoryDetailsDao.addDetails(
-                CategoryDetails(
+            Graph.allCategoryDetailDao.addDetailList(
+                CategoryDetail(
                     category = category.name,
                     date = "2023/1",
-                    details = mapOf(Pair(tableData.itemName, tableData.price.toString())),
+                    detailList = mapOf(Pair(tableData.itemName, tableData.price.toString())),
                     project = tableData.projectList.first(),
                 )
             )
