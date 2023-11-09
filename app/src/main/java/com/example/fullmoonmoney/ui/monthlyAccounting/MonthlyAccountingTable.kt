@@ -34,7 +34,6 @@ fun MonthlyAccountingTable(
     setAssetDetail: (Int, String) -> Unit,
 ) {
     val titleData = listOf(R.string.item, R.string.amount)
-    var amount by remember { mutableStateOf("") }
     var isAddItemDialog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
@@ -60,6 +59,7 @@ fun MonthlyAccountingTable(
             )
         }
         detailList.forEachIndexed { index, detail ->
+            var amount by remember { mutableStateOf(detail.amount) }
             amount = detail.amount
 
             Row(Modifier.fillMaxWidth()) {

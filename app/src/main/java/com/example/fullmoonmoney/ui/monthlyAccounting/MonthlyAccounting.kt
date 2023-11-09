@@ -51,7 +51,6 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val detailList = viewState.detailList.toMutableList()
-    val selectedCategory = viewState.assetCategory
     val targetPrice by remember { viewModel.targetPrice }
     val currentMoney by remember { viewModel.currentMoney }
     val monthTargetPrice by remember { viewModel.monthTargetPrice }
@@ -111,7 +110,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
                         .clip(RoundedCornerShape(10.dp))
                         .clickable { viewModel.setSelectedCategory(it) }
                         .background(
-                            if (it == selectedCategory) {
+                            if (it == viewState.assetCategory) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.primaryContainer
