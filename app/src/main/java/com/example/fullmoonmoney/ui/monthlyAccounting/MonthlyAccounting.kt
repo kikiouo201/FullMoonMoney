@@ -50,12 +50,14 @@ import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
 
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    val detailList = viewState.detailList.toMutableList()
     val targetPrice by remember { viewModel.targetPrice }
     val currentMoney by remember { viewModel.currentMoney }
     val monthTargetPrice by remember { viewModel.monthTargetPrice }
+    val detailList = viewState.detailList.toMutableList()
+
     var isEditContent by remember { mutableStateOf(false) }
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
+    var isSave = false
 
     Column {
         Row(
@@ -104,17 +106,22 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
             viewModel.categories.forEach {
-                Text(text = stringResource(id = it.categoryName),
+                Text(
+                    text = stringResource(id = it.categoryName),
                     color = Color.White,
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable { viewModel.setSelectedCategory(it) }
+                        .clickable {
+                            if (isEditContent && isSave) viewModel.setAssetDetailList(detailList)
+                            isEditContent = false
+                            isSave = false
+                            viewModel.setSelectedCategory(it)
+                        }
                         .background(
-                            if (it == viewState.assetCategory) {
+                            if (it == viewState.assetCategory)
                                 MaterialTheme.colorScheme.primary
-                            } else {
+                            else
                                 MaterialTheme.colorScheme.primaryContainer
-                            }
                         )
                         .padding(10.dp)
                 )
@@ -125,7 +132,10 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             horizontalArrangement = Arrangement.End,
         ) {
             IconButton(onClick = {
-                if (isEditContent) viewModel.setAssetDetailList(detailList)
+                if (isEditContent && isSave) {
+                    viewModel.setAssetDetailList(detailList)
+                    isSave = false
+                }
                 isEditContent = !isEditContent
             }) {
                 if (isEditContent)
@@ -152,6 +162,7 @@ fun MonthlyAccounting(viewModel: MonthlyAccountingViewModel = viewModel()) {
             isEditContent = isEditContent,
             setAssetDetailItem = { viewModel.setAssetDetail(it, "") }
         ) { index, amount ->
+            isSave = true
             detailList[index].amount = amount
         }
         if (isAddFixedItemDialog) {
