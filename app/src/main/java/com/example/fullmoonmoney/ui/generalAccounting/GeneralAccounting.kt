@@ -104,7 +104,7 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
         if (isAddFixedItemDialog && viewState.isCategory) {
             AddCategoryDialog(onAdd = { item ->
                 isAddFixedItemDialog = false
-                viewModel.setAllProject(item)
+                viewModel.setProject(item)
             }, onCancel = { isAddFixedItemDialog = false })
         } else if (isAddFixedItemDialog) {
             AddItemDialog(onAdd = { item, price, project ->
@@ -113,11 +113,6 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
                         item = item,
                         amount = price.toIntOrNull() ?: 0,
                         date = viewModel.getSelectedDataKey(),
-                        category = if (viewState.isCategory) {
-                            AccountingCategory.Project.name
-                        } else {
-                            AccountingCategory.Detail.name
-                        },
                         projectList = project
                     )
                 )
@@ -380,7 +375,6 @@ fun AccountingItemPreview() {
                     item = "麥當勞",
                     amount = 120,
                     date = "2023/1",
-                    category = AccountingCategory.Project.name,
                     projectList = mutableListOf("午餐", "晚餐")
                 )
             )

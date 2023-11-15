@@ -42,7 +42,6 @@ class GeneralAccountingViewModel(
                 item = "麥當當$it",
                 amount = 120,
                 date = getSelectedDataKey(),
-                category = AccountingCategory.Project.name,
                 projectList = projectList
             )
         }
@@ -51,7 +50,6 @@ class GeneralAccountingViewModel(
                 item = "${it}麥SS",
                 amount = 120,
                 date = getSelectedDataKey(),
-                category = AccountingCategory.Detail.name,
                 projectList = projectList
             )
         }
@@ -60,7 +58,6 @@ class GeneralAccountingViewModel(
                 item = "麥當當$it",
                 amount = 120,
                 date = getSelectedDataKey(),
-                category = AccountingCategory.Project.name,
                 projectList = mutableListOf(it)
             )
         }
@@ -70,27 +67,24 @@ class GeneralAccountingViewModel(
             allAllAccountingDetailDao.addDetailList(listThree)
         }
         setProjectList(projectList.map { Project(name = it) })
-        setProject(Project(name = projectList.first()))
+        setSelectedProject(Project(name = projectList.first()))
     }
 
     private fun getStateData() {
         viewModelScope.launch {
             combine(
-                allAllAccountingDetailDao.getDetailList(
-                    if (_isCategory) AccountingCategory.Project else AccountingCategory.Detail,
-                    getSelectedDataKey()
-                ).transform { list ->
-                    emit(
-                        if (_isCategory)
-                            list.filter { detail ->
-                                _selectedProject.value?.let {
-                                    detail.projectList.contains(it.name)
-                                } ?: false
-                            }
-                        else
-                            list
-                    )
-                },
+                allAllAccountingDetailDao.getDateDetailList(getSelectedDataKey())
+                    .transform { list ->
+                        emit(
+                            if (_isCategory)
+                                list.filter { detail ->
+                                    _selectedProject.value?.let { detail.projectList.contains(it.name) }
+                                        ?: false
+                                }
+                            else
+                                list
+                        )
+                    },
                 allProjectDao.getAllProject(),
                 _selectedDate,
                 _selectedProject,
@@ -107,7 +101,7 @@ class GeneralAccountingViewModel(
     }
 
     // 明細的專案
-    fun setAllProject(projectName: String) {
+    fun setProject(projectName: String) {
         viewModelScope.launch {
             allProjectDao.addProject(Project(name = projectName))
             getStateData()
@@ -133,6 +127,9 @@ class GeneralAccountingViewModel(
 
     fun setAccountingDetailDao(accountingDetail: AccountingDetail) {
         viewModelScope.launch {
+            accountingDetail.projectList.forEach {
+                setProject(it)
+            }
             allAllAccountingDetailDao.addDetail(accountingDetail)
         }
     }
@@ -140,11 +137,6 @@ class GeneralAccountingViewModel(
     fun getTotal(): Int = state.value.detailList.sumOf { it.amount }
 
     fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
-
-    private fun setProject(project: Project) {
-        _selectedProject.value = project
-        getStateData()
-    }
 
     private fun setProjectList(projectList: List<Project>) {
         viewModelScope.launch {
