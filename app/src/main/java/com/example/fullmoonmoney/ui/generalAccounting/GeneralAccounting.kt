@@ -42,21 +42,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fullmoonmoney.R
-import com.example.fullmoonmoney.data.Category
+import com.example.fullmoonmoney.data.AccountingDetail
+import com.example.fullmoonmoney.data.Project
 import com.example.fullmoonmoney.ui.custom.MonthBarChart
 import com.example.fullmoonmoney.ui.datePicker.MonthDropdownMenu
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 @Composable
 fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
-    val selectedDate by remember { viewModel.selectedDate }
-    val selectedCategory by remember { viewModel.selectedCategory }
-    val selectedItem by remember { viewModel.selectedItem }
-    val categoryList by remember { mutableStateOf(viewModel.categoryList) }
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
     var isAddFixedItemDialog by remember { mutableStateOf(false) }
-    var isCategory by remember { mutableStateOf(false) }
 
     Column {
         Row(
@@ -67,7 +65,7 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(text = "總共 : ${viewModel.getTotal()}")
-            MonthDropdownMenu(selectedDate) {
+            MonthDropdownMenu(viewState.date) {
                 viewModel.setCurrentStatus(it)
             }
         }
@@ -75,18 +73,18 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
-            IconButton(onClick = { isCategory = true }) {
+            IconButton(onClick = { viewModel.setSelectedAccountingCategory(true) }) {
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = "star",
-                    tint = if (isCategory) colorResource(R.color.yellow_500) else MaterialTheme.colorScheme.onPrimary
+                    tint = if (viewState.isCategory) colorResource(R.color.yellow_500) else MaterialTheme.colorScheme.onPrimary
                 )
             }
-            IconButton(onClick = { isCategory = false }) {
+            IconButton(onClick = { viewModel.setSelectedAccountingCategory(false) }) {
                 Icon(
                     imageVector = Icons.Filled.List,
                     contentDescription = "list",
-                    tint = if (!isCategory) colorResource(R.color.yellow_500) else MaterialTheme.colorScheme.onPrimary
+                    tint = if (!viewState.isCategory) colorResource(R.color.yellow_500) else MaterialTheme.colorScheme.onPrimary
                 )
             }
             IconButton(onClick = { isAddFixedItemDialog = true }) {
@@ -95,24 +93,31 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
                 )
             }
         }
-        if (isCategory && selectedCategory != null) {
-            CategoryListAccounting(selectedCategory!!, categoryList.value) {
-                viewModel.setSelectedCategory(it)
+        if (viewState.isCategory && viewState.selectedProject != null) {
+            ProjectListAccounting(viewState.selectedProject!!, viewState.projectList) {
+                viewModel.setSelectedProject(it)
             }
         }
-        DetailListAccounting(selectedItem?.detailList)
 
-        if (isAddFixedItemDialog && isCategory) {
+        DetailListAccounting(viewState.detailList)
+
+        if (isAddFixedItemDialog && viewState.isCategory) {
             AddCategoryDialog(onAdd = { item ->
                 isAddFixedItemDialog = false
-                viewModel.setCurrentCategory(item)
+                viewModel.setAllProject(item)
             }, onCancel = { isAddFixedItemDialog = false })
         } else if (isAddFixedItemDialog) {
             AddItemDialog(onAdd = { item, price, project ->
-                viewModel.setCurrentTableData(
+                viewModel.setAccountingDetailDao(
                     AccountingDetail(
-                        itemName = item,
-                        price = price.toIntOrNull() ?: 0,
+                        item = item,
+                        amount = price.toIntOrNull() ?: 0,
+                        date = viewModel.getSelectedDataKey(),
+                        category = if (viewState.isCategory) {
+                            AccountingCategory.Project.name
+                        } else {
+                            AccountingCategory.Detail.name
+                        },
                         projectList = project
                     )
                 )
@@ -123,14 +128,14 @@ fun GeneralAccounting(viewModel: GeneralAccountingViewModel = viewModel()) {
 }
 
 @Composable
-fun CategoryListAccounting(
-    selectedCategory: Category,
-    categoryList: List<Category>,
-    setSelectedCategory: (Category) -> Unit,
+fun ProjectListAccounting(
+    selectedProject: Project,
+    projectList: List<Project>,
+    setSelectedProject: (Project) -> Unit,
 ) {
     Column(Modifier.padding(5.dp)) {
         Text(
-            text = selectedCategory.name,
+            text = selectedProject.name,
             color = Color.White,
             modifier = Modifier
                 .padding(5.dp)
@@ -168,7 +173,7 @@ fun CategoryListAccounting(
                 .padding(vertical = 5.dp),
             columns = GridCells.Fixed(3)
         ) {
-            categoryList.forEach {
+            projectList.forEach {
                 item {
                     Text(
                         text = it.name,
@@ -176,13 +181,10 @@ fun CategoryListAccounting(
                         modifier = Modifier
                             .padding(5.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable { setSelectedCategory(it) }
+                            .clickable { setSelectedProject(it) }
                             .background(
-                                if (it == selectedCategory) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                }
+                                if (it.name == selectedProject.name) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.primaryContainer
                             )
                             .padding(10.dp),
                         overflow = TextOverflow.Ellipsis,
@@ -212,8 +214,8 @@ fun DetailListAccounting(detailList: List<AccountingDetail>?) {
             Row(
                 modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = detail.itemName)
-                Text(text = "$${detail.price}")
+                Text(text = detail.item)
+                Text(text = "$${detail.amount}")
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "${stringResource(id = R.string.project)} : ")
@@ -360,12 +362,9 @@ fun GeneralAccountingPreview() {
 @Composable
 fun CategoryAccountingPreview() {
     FullMoonMoneyTheme {
-        CategoryListAccounting(
-            selectedCategory = Category(name = "早餐"),
-            categoryList = listOf(
-                Category(name = "早餐"),
-                Category(name = "午餐"),
-                Category(name = "晚餐")
+        ProjectListAccounting(
+            selectedProject = Project(name = "早餐"), projectList = listOf(
+                Project(name = "早餐"), Project(name = "午餐"), Project(name = "晚餐")
             )
         ) {}
     }
@@ -378,7 +377,11 @@ fun AccountingItemPreview() {
         DetailListAccounting(
             listOf(
                 AccountingDetail(
-                    itemName = "麥當勞", price = 120, projectList = mutableListOf("午餐", "晚餐")
+                    item = "麥當勞",
+                    amount = 120,
+                    date = "2023/1",
+                    category = AccountingCategory.Project.name,
+                    projectList = mutableListOf("午餐", "晚餐")
                 )
             )
         )

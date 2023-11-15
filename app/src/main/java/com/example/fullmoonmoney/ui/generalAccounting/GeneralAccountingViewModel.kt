@@ -1,176 +1,164 @@
 package com.example.fullmoonmoney.ui.generalAccounting
 
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.fullmoonmoney.Graph
-import com.example.fullmoonmoney.data.Category
-import com.example.fullmoonmoney.data.CategoryDetail
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import com.example.fullmoonmoney.R
+import com.example.fullmoonmoney.data.AccountingDetail
+import com.example.fullmoonmoney.data.AllAccountingDetail
+import com.example.fullmoonmoney.data.AllProject
+import com.example.fullmoonmoney.data.Project
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
-class GeneralAccountingViewModel : ViewModel() {
+class GeneralAccountingViewModel(
+    private val allAllAccountingDetailDao: AllAccountingDetail = Graph.allAccountingDetailDao,
+    private val allProjectDao: AllProject = Graph.allProjectDao,
+) : ViewModel() {
 
-    private var allItem = mutableStateMapOf<String, AccountingItem>()
-    private var selectedTotal = mutableStateOf(0)
-    var selectedDate = mutableStateOf(Pair(2023, 1))
-    val selectedCategory = mutableStateOf<Category?>(null)
-    var selectedItem = mutableStateOf<AccountingItem?>(null)
-    var categoryList = mutableStateOf(listOf<Category>())
+    private val _state = MutableStateFlow(GeneralAccountingViewState())
+    private val _selectedDate = MutableStateFlow(Pair(2023, 1)) // 日期
+    private var _selectedProject = MutableStateFlow<Project?>(null)
+    private var selectedDate = mutableStateOf(Pair(2023, 1))
+    private var _isCategory = false
+
+    val state: StateFlow<GeneralAccountingViewState>
+        get() = _state
 
     init {
-        // 測試資料
-        val categoryNameList = mutableListOf(
-            "早餐",
-            "午餐",
-            "晚餐",
-            "早餐1",
-            "午餐1",
-            "晚餐1",
-            "早餐2",
-            "午餐2",
-            "晚餐2"
-        )
+        initTestData()
+        getStateData()
+    }
+
+    // 測試資料
+    private fun initTestData() {
         val projectList = mutableListOf("午餐", "晚餐")
-        val list = (0..3).map {
+        val listOne = (0..3).map {
             AccountingDetail(
-                itemName = "麥當勞$it",
-                price = 120,
+                item = "麥當當$it",
+                amount = 120,
+                date = getSelectedDataKey(),
+                category = AccountingCategory.Project.name,
                 projectList = projectList
             )
         }
-        categoryList.value = projectList.map { Category(name = it) }
-        selectedCategory.value = categoryList.value.first()
-        allItem[getSelectedDataKey()] = AccountingItem(list.sumOf { it.price }, list)
-        setSelectedCategory()
+        val listTwo = (0..3).map {
+            AccountingDetail(
+                item = "${it}麥SS",
+                amount = 120,
+                date = getSelectedDataKey(),
+                category = AccountingCategory.Detail.name,
+                projectList = projectList
+            )
+        }
+        val listThree = projectList.map {
+            AccountingDetail(
+                item = "麥當當$it",
+                amount = 120,
+                date = getSelectedDataKey(),
+                category = AccountingCategory.Project.name,
+                projectList = mutableListOf(it)
+            )
+        }
+        viewModelScope.launch {
+            allAllAccountingDetailDao.addDetailList(listOne)
+            allAllAccountingDetailDao.addDetailList(listTwo)
+            allAllAccountingDetailDao.addDetailList(listThree)
+        }
+        setProjectList(projectList.map { Project(name = it) })
+        setProject(Project(name = projectList.first()))
+    }
 
-        GlobalScope.launch(Dispatchers.IO) {
-            list.forEachIndexed { index, accountingDetail ->
-                setAccountingDetailDao(Category(name = categoryNameList[index]), accountingDetail)
-            }
-            Graph.allCategoryDao.getAllCategory { allCategory ->
-                GlobalScope.launch(Dispatchers.Main) {
-                    if (allCategory.isNotEmpty()) {
-                        categoryList.value = allCategory
-                        categoryList.value.getOrNull(0)?.let {
-                            setSelectedCategory(it)
-                        }
-                    }
-                }
-            }
+    private fun getStateData() {
+        viewModelScope.launch {
+            combine(
+                allAllAccountingDetailDao.getDetailList(
+                    if (_isCategory) AccountingCategory.Project else AccountingCategory.Detail,
+                    getSelectedDataKey()
+                ).transform { list ->
+                    emit(list.filter { detail ->
+                        _selectedProject.value?.let {
+                            detail.projectList.contains(it.name)
+                        } ?: false
+                    })
+                },
+                allProjectDao.getAllProject(),
+                _selectedDate,
+                _selectedProject,
+            ) { assetData, allProject, date, project ->
+                GeneralAccountingViewState(
+                    isCategory = _isCategory,
+                    date = date,
+                    selectedProject = project,
+                    detailList = assetData,
+                    projectList = allProject
+                )
+            }.collect { _state.value = it }
         }
     }
 
-    fun setCurrentCategory(data: String) {
-        mutableListOf<Category>().let {
-            it.addAll(categoryList.value)
-            it.add(Category(name = data))
-            categoryList.value = it
+    // 明細的專案
+    fun setAllProject(projectName: String) {
+        viewModelScope.launch {
+            allProjectDao.addProject(Project(name = projectName))
+            getStateData()
         }
     }
 
-    fun setSelectedCategory(category: Category) {
-        selectedCategory.value = category
-        GlobalScope.launch(Dispatchers.IO) {
-            Graph.allCategoryDetailDao.getDetailList { assetCategory, assetData ->
-                GlobalScope.launch(Dispatchers.IO) {
-                    initDetails(
-                        Category(name = assetCategory),
-                        assetData
-                    )
-                }
-            }
-        }
+    // 選擇的專案
+    fun setSelectedProject(project: Project) {
+        _selectedProject.value = project
+        getStateData()
+    }
+
+    // 一般記帳的分類
+    fun setSelectedAccountingCategory(isCategory: Boolean) {
+        _isCategory = isCategory
+        getStateData()
     }
 
     fun setCurrentStatus(date: Pair<Int, Int>) {
         selectedDate.value = date
-        setSelectedCategory()
+        getStateData()
     }
 
-    fun setCurrentTableData(data: AccountingDetail) {
-        allItem[getSelectedDataKey()]?.let { item ->
-            if (item.detailList.isEmpty()) return
-            val detailList = mutableListOf<AccountingDetail>().apply {
-                addAll(item.detailList)
-                add(data)
-            }
-            AccountingItem(detailList = detailList).let {
-                it.total = setTotal(it)
-                allItem[getSelectedDataKey()] = it
-                selectedItem.value = it
-                selectedTotal.value = it.total
-            }
+    fun setAccountingDetailDao(accountingDetail: AccountingDetail) {
+        viewModelScope.launch {
+            allAllAccountingDetailDao.addDetail(accountingDetail)
         }
     }
 
-    private fun setAccountingDetailDao(category: Category, accountingDetail: AccountingDetail) {
-        accountingDetail.let { tableData ->
-            Graph.allCategoryDetailDao.addDetailList(
-                CategoryDetail(
-                    category = category.name,
-                    date = "2023/1",
-                    detailList = mapOf(Pair(tableData.itemName, tableData.price.toString())),
-                    project = tableData.projectList.first(),
-                )
-            )
-        }
+    fun getTotal(): Int = state.value.detailList.sumOf { it.amount }
+
+    fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
+
+    private fun setProject(project: Project) {
+        _selectedProject.value = project
+        getStateData()
     }
 
-    fun getTotal(): Int = selectedItem.value?.total ?: 0
-
-    private fun setTotal(generalAccounting: AccountingItem): Int {
-        var total = 0
-        generalAccounting.detailList.forEach {
-            total += it.price
+    private fun setProjectList(projectList: List<Project>) {
+        viewModelScope.launch {
+            allProjectDao.addAllProject(projectList)
         }
-        return total
-    }
-
-    private fun getSelectedDataKey() = "${selectedDate.value.first}/${selectedDate.value.second}"
-
-    private fun setSelectedCategory() {
-        if (allItem[getSelectedDataKey()] == null) {
-            allItem[getSelectedDataKey()] = AccountingItem()
-            selectedItem.value = AccountingItem()
-            selectedTotal.value = 0
-        } else {
-            allItem[getSelectedDataKey()]?.let {
-                selectedItem.value = it
-                selectedTotal.value = it.total
-            }
-        }
-    }
-
-    private fun initDetails(
-        assetCategory: Category,
-        data: List<Pair<String, String>>,
-    ) {
-        val detailList = mutableListOf<AccountingDetail>()
-        val accountingDetail = AccountingDetail()
-        accountingDetail.let { detail ->
-            data.forEach {
-                detail.itemName = it.first
-                detail.price = it.second.toIntOrNull() ?: 0
-                detail.projectList = mutableListOf(assetCategory.name)
-            }
-        }
-        detailList.add(accountingDetail)
-        if (detailList.isEmpty()) return
-        setCurrentTableData(accountingDetail)
     }
 }
 
-// 記帳項目
-data class AccountingItem(
-    var total: Int = 0,
-    var detailList: List<AccountingDetail> = listOf(),
+data class GeneralAccountingViewState(
+    val selectedProject: Project? = null,
+    var isCategory: Boolean = false,
+    val date: Pair<Int, Int> = Pair(2023, 1), // pair<年,月>
+    val detailList: List<AccountingDetail> = emptyList(),
+    val projectList: List<Project> = emptyList(),
 )
 
-// 記帳明細
-data class AccountingDetail(
-    var price: Int = 0,
-    var itemName: String = "",
-    var projectList: MutableList<String> = mutableListOf(),
-)
+enum class AccountingCategory(
+    val categoryName: Int,
+) {
+    Project(R.string.project),  // 專案
+    Detail(R.string.detail),  // 明細
+}

@@ -102,7 +102,6 @@ class MonthlyAccountingViewModel(
     }
 }
 
-// 資產類別明細
 data class MonthlyAccountingViewState(
     val assetCategory: AssetCategory = AssetCategory.Income,
     val date: Pair<Int, Int> = Pair(2023, 1), // pair<年,月>

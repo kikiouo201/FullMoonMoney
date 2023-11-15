@@ -22,4 +22,16 @@ class RoomConverter {
         val type: Type = object : TypeToken<Map<String?, String?>?>() {}.type
         return gson.fromJson(json, type)
     }
+
+    @TypeConverter
+    fun fromString(value: String?): MutableList<String?>? {
+        val listType = object : TypeToken<MutableList<String?>?>() {}.type
+        return Gson().fromJson(value, listType)
+    }
+
+    @TypeConverter
+    fun fromArrayList(list: MutableList<String?>?): String? {
+        val gson = Gson()
+        return gson.toJson(list)
+    }
 }
