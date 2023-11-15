@@ -80,11 +80,16 @@ class GeneralAccountingViewModel(
                     if (_isCategory) AccountingCategory.Project else AccountingCategory.Detail,
                     getSelectedDataKey()
                 ).transform { list ->
-                    emit(list.filter { detail ->
-                        _selectedProject.value?.let {
-                            detail.projectList.contains(it.name)
-                        } ?: false
-                    })
+                    emit(
+                        if (_isCategory)
+                            list.filter { detail ->
+                                _selectedProject.value?.let {
+                                    detail.projectList.contains(it.name)
+                                } ?: false
+                            }
+                        else
+                            list
+                    )
                 },
                 allProjectDao.getAllProject(),
                 _selectedDate,
