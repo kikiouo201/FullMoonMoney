@@ -47,7 +47,15 @@ class MonthlyAccountingViewModel(
                 ),
                 allAssetDetailDao.getDateDetailList(getSelectedDataKey())
                     .transform { detail ->
-                        emit(detail.sumOf { it.amount.toIntOrNull() ?: 0 })
+                        emit(detail.sumOf {
+                            if (it.category.contains(AssetCategory.Expenditure.name)
+                                || it.category.contains(AssetCategory.Debt.name)
+                            ) {
+                                -(it.amount.toIntOrNull() ?: 0)
+                            } else {
+                                it.amount.toIntOrNull() ?: 0
+                            }
+                        })
                     },
                 _selectedDate,
             ) { assetData, netWorth, date ->
