@@ -13,6 +13,10 @@
     <string name="expenditure">支出</string>
     <string name="debt">負債</string>
     <string name="detail">明細</string>
+    <string name="cycle">週期</string>
+    <string name="fixed_income_and_expenditure">固定收支</string>
+    <string name="living_expenses_budget">生活費預算</string>
+    <string name="target_savings">目標儲蓄</string>
     <string name="price">價錢</string>
     <string name="ok">確定</string>
     <string name="cancel">取消</string>
