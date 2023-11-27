@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -34,55 +33,70 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fullmoonmoney.R
 import com.example.fullmoonmoney.ui.custom.EditContentCell
+import com.example.fullmoonmoney.ui.dataFormat.formatCurrency
+import com.example.fullmoonmoney.ui.dataFormat.formatDecimal
+import com.example.fullmoonmoney.ui.dataFormat.formatPercentage
 import com.example.fullmoonmoney.ui.theme.FullMoonMoneyTheme
 
 @Composable
 fun LivingExpensesBudget(budgetItemList: List<BudgetItem>) {
+    val budget by remember { mutableStateOf(30000) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
     ) {
         Text(text = stringResource(id = R.string.living_expenses_budget))
-        Text(text = "每年：30000")
-        Text(text = "每月：30000")
-        Text(text = "每週：30000")
-        Text(text = "每日：30000")
-        BudgetItem(name = "伙食費", budgetItemList)
-        BudgetItem(name = "娛樂費", budgetItemList)
+        Text(text = "每年：${formatCurrency(budget * 4 * 12)}")
+        Text(text = "每月：${formatCurrency(budget * 4)}")
+        Text(text = "每週：${formatCurrency(budget)}")
+        Text(text = "每日：${formatDecimal(budget.toDouble() / 7)}")
+        BudgetItem(
+            name = "伙食費",
+            total = 15000,
+            percentage = formatPercentage(15000, budget),
+            budgetItemList = budgetItemList
+        )
+        BudgetItem(
+            name = "娛樂費",
+            total = 10000,
+            percentage = formatPercentage(10000, budget),
+            budgetItemList = budgetItemList
+        )
     }
 }
 
 @Composable
-fun BudgetItem(name: String, budgetItemList: List<BudgetItem>) {
-    var isDetail by remember { mutableStateOf(true) }
+fun BudgetItem(name: String, total: Int, percentage: String, budgetItemList: List<BudgetItem>) {
+    var isDetail by remember { mutableStateOf(false) }
 
     Column {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .clickable { isDetail = !isDetail }
+                .padding(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     modifier = Modifier.size(40.dp),
                     imageVector = Icons.Filled.Create,
                     contentDescription = "create"
                 )
                 Text(modifier = Modifier.padding(5.dp), text = name)
-                Text(modifier = Modifier.padding(5.dp), text = "15%")
+                Text(modifier = Modifier.padding(5.dp), text = percentage)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(modifier = Modifier.padding(5.dp), text = "15,000")
+                Text(modifier = Modifier.padding(5.dp), text = formatCurrency(total))
                 Icon(
-                    modifier = Modifier
-                        .wrapContentWidth(align = Alignment.End)
-                        .clickable { isDetail = !isDetail },
+                    modifier = Modifier.size(35.dp),
                     imageVector = if (isDetail) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
                     contentDescription = "ArrowDown"
                 )
