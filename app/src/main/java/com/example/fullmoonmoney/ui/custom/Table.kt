@@ -52,7 +52,7 @@ fun TableContentCell(
     ) {
         Text(
             text = "$text :",
-            Modifier
+            modifier = Modifier
                 .weight(1f)
                 .padding(10.dp)
         )
@@ -68,10 +68,48 @@ fun TableContentCell(
         } else {
             Text(
                 text = textFieldText,
-                Modifier
+                modifier = Modifier
                     .weight(1f)
                     .padding(10.dp)
             )
         }
+    }
+}
+
+// 內容
+@Composable
+fun EditContentCell(
+    title: String,
+    price: Int,
+    frequency: Int,
+    onChangeTitle: (String) -> Unit,
+    onChangePrice: (String) -> Unit,
+    onChangeFrequency: (String) -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = title,
+            onValueChange = { onChangeTitle(it) },
+            modifier = Modifier
+                .padding(5.dp)
+                .weight(2f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+        OutlinedTextField(
+            value = price.toString(),
+            onValueChange = { onChangePrice(it) },
+            modifier = Modifier
+                .padding(5.dp)
+                .weight(2f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            value = frequency.toString(),
+            onValueChange = { onChangeFrequency(it) },
+            modifier = Modifier
+                .padding(5.dp)
+                .weight(1f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
     }
 }

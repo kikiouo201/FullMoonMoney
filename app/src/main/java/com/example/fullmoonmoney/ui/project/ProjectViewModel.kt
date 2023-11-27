@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 class ProjectViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(ProjectViewState())
-    private var _projectCategory = ProjectCategory.FixedIncomeAndExpenditure
+    private var _projectCategory = ProjectCategory.TargetSavings
 
     val projectList: List<ProjectCategory> = listOf(
         ProjectCategory.FixedIncomeAndExpenditure,
@@ -26,6 +26,7 @@ class ProjectViewModel : ViewModel() {
     // 測試資料
     private fun getStateData() {
         _state.value = ProjectViewState(
+            projectCategory = _projectCategory,
             fixedItemList = listOf(
                 FixedItem(
                     item = "房租",
@@ -43,12 +44,50 @@ class ProjectViewModel : ViewModel() {
                     source = "永豐銀行",
                     isExpenditure = true
                 )
+            ),
+            budgetItemList = listOf(
+                BudgetItem(
+                    item = "食物",
+                    price = 30000,
+                    frequency = 1,
+                ),
+                BudgetItem(
+                    item = "交通",
+                    price = 20000,
+                    frequency = 2,
+                ),
+                BudgetItem(
+                    item = "居住費",
+                    price = 30000,
+                    frequency = 3,
+                ),
+                BudgetItem(
+                    item = "生活費",
+                    price = 30000,
+                    frequency = 3,
+                ),
+                BudgetItem(
+                    item = "娛樂費",
+                    price = 30000,
+                    frequency = 2,
+                ),
+                BudgetItem(
+                    item = "育兒費",
+                    price = 30000,
+                    frequency = 2,
+                ),
+                BudgetItem(
+                    item = "孝親費",
+                    price = 30000,
+                    frequency = 1,
+                ),
             )
         )
     }
 
     fun setSelectedProject(projectCategory: ProjectCategory) {
         _projectCategory = projectCategory
+        getStateData()
     }
 }
 
@@ -61,6 +100,7 @@ enum class ProjectCategory(
     Invest(R.string.invest),  // 投資
 }
 
+// 固定支出
 data class FixedItem(
     val item: String = "",
     val price: Int = 0,
@@ -70,9 +110,17 @@ data class FixedItem(
     val isExpenditure: Boolean = false, // 是否為支出
 )
 
+// 預算
+data class BudgetItem(
+    val item: String = "",
+    val price: Int = 0,
+    val frequency: Int = 0,
+)
+
 data class ProjectViewState(
     val projectCategory: ProjectCategory = ProjectCategory.FixedIncomeAndExpenditure,
     val date: Pair<Int, Int> = Pair(2023, 1), // pair<年,月>
+    val budgetItemList: List<BudgetItem> = emptyList(),
     val fixedItemList: List<FixedItem> = emptyList(),
     val fixedIncomePrice: Int = 0,
     val fixedExpenditurePrice: Int = 0,

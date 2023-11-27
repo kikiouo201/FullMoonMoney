@@ -58,7 +58,7 @@ fun Project(viewModel: ProjectViewModel = viewModel()) {
         }
         when (viewState.projectCategory) {
             ProjectCategory.FixedIncomeAndExpenditure -> FixedIncomeAndExpenditure(viewState.fixedItemList)
-            ProjectCategory.LivingExpensesBudget -> LivingExpensesBudget()
+            ProjectCategory.LivingExpensesBudget -> LivingExpensesBudget(viewState.budgetItemList)
             ProjectCategory.TargetSavings -> TargetSavings()
             ProjectCategory.Invest -> Invest()
         }
