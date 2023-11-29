@@ -153,8 +153,7 @@ fun BudgetItem(name: String, total: Int, percentage: String, budgetItemList: Lis
                     Icon(
                         modifier = Modifier
                             .padding(10.dp)
-                            .size(30.dp)
-                            .clickable { },
+                            .size(30.dp),
                         imageVector = Icons.Filled.AddCircle,
                         contentDescription = "AddCircle",
                         tint = MaterialTheme.colorScheme.secondary
